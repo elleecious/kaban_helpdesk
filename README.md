@@ -39,6 +39,7 @@ KabanDesk is a PHP/MySQL helpdesk platform built to handle IT support requests a
   - 4-stage process: Request & Assessment → Approval & Planning → Implementation & Validation → Documentation & Closure
 
 ## Tech Stack
+
 - **Frontend:** HTML5, CSS3, jQuery, MDBootstrap Pro, AJAX
 - **Backend:** PHP, MySQL
 - **Deployment:** Ubuntu LAMP server, Apache virtual hosts with reverse proxy
@@ -65,4 +66,4 @@ Full SDLC documentation is available, including:
 
 ## License
 
-Internal use — Kaban Hotel and Casino Boracay
+Internal use — Kaban Hotel and Casino Boracay / Oriental Group.
