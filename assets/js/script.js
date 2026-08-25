@@ -216,7 +216,7 @@ $('#unassignedTicketsModal').on('show.bs.modal', function() {
 });
 
 // Claim button — delegated event since rows are injected dynamically
-    $("#claim_ticket").click(function(e) {
+    $("#claim_ticket").on("click", function(e) {
         
         e.preventDefault();
 
@@ -257,7 +257,7 @@ $('#unassignedTicketsModal').on('show.bs.modal', function() {
     });
 
 
-    $("#add_ticket").click(function(e) {
+    $("#add_ticket").on("click", function(e) {
         e.preventDefault(); // only strictly needed if this button is type="submit" inside a <form>
 
         var formData = new FormData($("#frmCreateTicket")[0]);
@@ -317,7 +317,7 @@ $('#unassignedTicketsModal').on('show.bs.modal', function() {
         });
     });
     
-    $("#add_users").click(function(e){
+    $("#add_users").on("click", function(e){
         e.preventDefault();
 
         $.ajax({
@@ -357,7 +357,7 @@ $('#unassignedTicketsModal').on('show.bs.modal', function() {
         });
     });
 
-    $("#add_category").click(function(e){
+    $("#add_category").on("click", function(e){
         
         e.preventDefault();
 
@@ -396,7 +396,46 @@ $('#unassignedTicketsModal').on('show.bs.modal', function() {
         });
     });
 
-    $("#add_sla").click(function(e){
+    $("#save_category").on("click", function(e){
+        e.preventDefault();
+
+        $.ajax({
+            url:'./actions/save_categories.php',
+            type:'POST',
+            data:{
+                edit_category_id:$("#edit_category_id").val(),
+                edit_category_code:$("#edit_category_code").val(),
+                edit_category_name:$("#edit_category_name").val(),
+            },
+            dataType:'json',
+            success:function(response){
+                console.log(response);
+                Swal.fire({
+                    title: response.status === 'success' ? 'Success!' : 'Error!',
+                    text: response.message,
+                    icon: response.status === 'success' ? 'success' : 'error',
+                    confirmButtonText: 'OK', 
+                });
+                $(document.activeElement).blur();
+                $("#edit_category_modal").modal('hide');
+                setTimeout(function(){
+                    location.reload();
+                }, 1000);
+            },
+            error: function(xhr, status, error) {
+                console.log("Ajax Error: " + xhr.responseText);
+                console.log("Ajax Status: " + status);
+                Swal.fire({
+                    title: 'Error!',
+                    text: 'An error occurred: ' + error,
+                    icon: 'error',
+                    confirmButtonText: 'OK'
+                });
+            }
+        });
+    });
+
+    $("#add_sla").on("click", function(e){
         e.preventDefault();
 
         $.ajax({
@@ -436,7 +475,48 @@ $('#unassignedTicketsModal').on('show.bs.modal', function() {
         });
     });
 
-    $("#btnLogin").click(function(e){
+    $("#save_sla").on('click', function(e){
+        e.preventDefault();
+
+        $.ajax({
+            url:'./actions/save_sla_rules.php',
+            type: 'POST',
+            data:{
+                edit_sla_id:$("#edit_sla_id").val(),
+                edit_sla_cat_id:$("#edit_sla_cat_id").val(),
+                edit_sla_priority:$("#edit_sla_priority").val(),
+                edit_sla_response_hours:$("#edit_sla_response_hours").val(),
+                edit_sla_resolution_hours:$("#edit_sla_resolution_hours").val(),
+            },
+            dataType:'json',
+            success: function(response){
+                console.log(response);
+                Swal.fire({
+                    title: response.status === 'success' ? 'Success!' : 'Error!',
+                    text: response.message,
+                    icon: response.status === 'success' ? 'success' : 'error',
+                    confirmButtonText: 'OK',
+                });
+                $(document.activeElement).blur();
+                $("#edit_category_modal").modal('hide');
+                setTimeout(function(){
+                    location.reload();
+                }, 1000);
+            },
+            error: function(xhr, status, error) {
+                console.log("Ajax Error: " + xhr.responseText);
+                console.log("Ajax Status: " + status);
+                Swal.fire({
+                    title: 'Error!',
+                    text: 'An error occurred: ' + error,
+                    icon: 'error',
+                    confirmButtonText: 'OK'
+                });
+            }
+        })
+    });
+
+    $("#btnLogin").on("click", function(e){
         e.preventDefault();
 
         $.ajax({
@@ -481,7 +561,7 @@ $('#unassignedTicketsModal').on('show.bs.modal', function() {
         });
     });
 
-    $("#btnLogout").click(function(e){
+    $("#btnLogout").on("click", function(e){
         e.preventDefault();
 
         $.ajax({
