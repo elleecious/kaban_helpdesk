@@ -19,7 +19,7 @@
             VALUES (?,?,?,?,?,?,?)",
         array($login_id, gethostbyaddr($_SERVER['REMOTE_ADDR']),getLocalIP(),"Manage Categories","UPDATE",         
             "<details>
-                <p>Add Category</p>
+                <p>Update Category</p>
                 <p>
                     Category Code: ".$category['code']." => <span class='font-weight-bold'>".$edit_category_code."</span><br>
                     Category Name: ".$category['name']."  => <span class='font-weight-bold'>".$edit_category_name."</span><br>
