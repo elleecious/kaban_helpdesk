@@ -17,6 +17,7 @@
                                 <h5><?php echo $role; ?></h5>
                                 <h5><?php echo $department; ?></h5>
                             </div>
+                            <a class="btn btn-primary btn-md" href="change_password.php">Change Password</a>
                         </div>
                     </div>
                 </div>

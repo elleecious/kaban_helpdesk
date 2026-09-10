@@ -10,7 +10,7 @@
     <div class="collapse navbar-collapse" id="basicExampleNav">
         <ul class="navbar-nav mr-auto">
             <?php
-                if($role == "IT Manager") {
+                if($role == "IT Manager" && $role == "General Manager") {
             ?>
             <li class="nav-item">
                 <a class="nav-link">
@@ -35,18 +35,6 @@
                 <a class="nav-link">
                     <span class="fa fa-dashboard fa-lg hvr-pop text-white"></span>
                     <span>Dashboard</span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link">
-                    <span class="fa fa-tags fa-lg hvr-pop text-white"></span>
-                    <span>All Tickets</span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link">
-                    <span class="fa fa-file fa-lg hvr-pop text-white"></span>
-                    <span>Reports</span>
                 </a>
             </li>
             <?php } else if ($role == "IT Support Specialist") { ?>
@@ -82,7 +70,7 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link">
+                    <a class="nav-link" href="knowledge_base_articles.php">
                         <span class="fa fa-book-open fa-lg hvr-pop text-white"></span>
                         <span>Knowledge Base</span>
                     </a>

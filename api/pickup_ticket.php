@@ -1,6 +1,6 @@
 <?php
     
-    include('../includes/connect.php');
+    include('../config/connect.php');
     include('../includes/session.php');
     include('../library/functions.php');
 
@@ -21,7 +21,7 @@
     $stmt->execute(array($ticketId));
     $ticket = $stmt->fetch(PDO::FETCH_ASSOC);
 
-    $agentName = retrieve("SELECT name FROM users WHERE id=?",array($login_id));
+    $agentName = retrieve("SELECT name, username FROM users WHERE id=?",array($login_id));
 
     if (!$ticket) {
         $response['status'] = 'already_claimed';
@@ -38,7 +38,7 @@
         manage("INSERT INTO logs (username,computer_name,ip_address,page,action,details,date)
             VALUES (?,?,?,?,?,?,?)",
             array(
-                $login_id,gethostbyaddr($_SERVER['REMOTE_ADDR']),getLocalIP(),
+                $agentName[0]['username'],$_SERVER['REMOTE_ADDR'],getLocalIP(),
                 "IT Support Queue",
                 "UPDATE",
                 "<details>

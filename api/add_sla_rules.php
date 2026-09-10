@@ -1,5 +1,5 @@
     <?php
-    include('../includes/connect.php');
+    include('../config/connect.php');
     include("../includes/session.php");
     include('../library/functions.php');
 
@@ -10,10 +10,11 @@
 
     $category = $_POST['category'];
     $priority = $_POST['priority'];
-    $response_hours = $_POST['response_hours'];
+    $response_minutes = $_POST['response_minutes'];
     $resolution_hours = $_POST['resolution_hours'];  
 
     $getCategory=retrieve("SELECT name FROM categories WHERE id=?",array($category));
+    $get_username = retrieve("SELECT * FROM users WHERE id=?",array($login_id));
 
     if (empty($getCategory)) {
         $response['status'] = 'error';
@@ -30,7 +31,7 @@
         exit;
     }
 
-    if (!is_numeric($response_hours) || !is_numeric($resolution_hours) || $response_hours < 0 || $resolution_hours < 0) {      
+    if (!is_numeric($response_minutes) || !is_numeric($resolution_hours) || $response_minutes < 0 || $resolution_hours < 0) {      
         $response['status'] = 'error';
         $response['message'] = 'Hours must be valid positive numbers';
         exit;
@@ -43,16 +44,16 @@
         exit;
     }
 
-    $add_sla_rules_sql = manage("INSERT INTO sla_rules(category_id,priority,response_hours,resolution_hours) VALUES(?,?,?,?)",array($category,$priority,$response_hours,$resolution_hours));
+    $add_sla_rules_sql = manage("INSERT INTO sla_rules(category_id,priority,response_minutes,resolution_hours) VALUES(?,?,?,?)",array($category,$priority,$response_minutes,$resolution_hours));
     $logs_result = manage("INSERT INTO logs (username,computer_name,ip_address,page,action,details,date)
             VALUES (?,?,?,?,?,?,?)",
-        array($login_id,gethostbyaddr($_SERVER['REMOTE_ADDR']),getLocalIP(),"Add Category","ADD",         
+        array($get_username[0]['username'],gethostbyaddr($_SERVER['REMOTE_ADDR']),getLocalIP(),"Add Category","ADD",         
             "<details>
                 <p>Add SLA Rules</p>
                 <p>
                     Category Name: <span class='font-weight-bold'>".$category_name."</span><br>
                     Priority: <span class='font-weight-bold'>".$priority."</span><br>
-                    Response Hours: <span class='font-weight-bold'>".$response_hours."</span><br>
+                    Response Hours: <span class='font-weight-bold'>".$response_minutes."</span><br>
                     Resolution Hours: <span class='font-weight-bold'>".$resolution_hours."</span><br>
                 </p>
             </details>", date('Y-m-d H:i:s a')));

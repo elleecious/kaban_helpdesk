@@ -1,5 +1,5 @@
 <?php
-    include('../includes/connect.php');
+    include('../config/connect.php');
     include("../includes/session.php");
     include('../library/functions.php');
 
@@ -10,6 +10,8 @@
     $edit_category_code = htmlspecialchars($_POST['edit_category_code']);
     $edit_category_name = htmlspecialchars($_POST['edit_category_name']);
 
+    $get_username = retrieve("SELECT username FROM users WHERE id=?",array($login_id));
+
     $getCategory = retrieve("SELECT * FROM category WHERE id=?",array($edit_category_id));
     $category = $getCategory[0];
 
@@ -17,7 +19,7 @@
 
     $logs_result = manage("INSERT INTO logs (username, computer_name,ip_address,page,action,details,date)
             VALUES (?,?,?,?,?,?,?)",
-        array($login_id, gethostbyaddr($_SERVER['REMOTE_ADDR']),getLocalIP(),"Manage Categories","UPDATE",         
+        array($get_username[0]['username'], gethostbyaddr($_SERVER['REMOTE_ADDR']),getLocalIP(),"Manage Categories","UPDATE",         
             "<details>
                 <p>Update Category</p>
                 <p>

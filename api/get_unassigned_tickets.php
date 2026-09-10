@@ -1,6 +1,6 @@
 <?php
 
-    include('../includes/connect.php');
+    include('../config/connect.php');
     include('../includes/session.php');
     include('../library/functions.php');
 
@@ -10,7 +10,7 @@
     global $pdo;
 
     $stmt = $pdo->prepare(
-        "SELECT ticket_number, subject, priority, 
+        "SELECT id, ticket_number, subject, priority, 
                 TIMESTAMPDIFF(MINUTE, created_at, NOW()) AS waiting_minutes
         FROM tickets
         WHERE assigned_to IS NULL AND status = 'Open'
@@ -23,10 +23,11 @@
 
     foreach ($tickets as $t) {
         $tickets_out[] = array(
-            'ticket_number'   => $t['ticket_number'],
-            'subject'         => $t['subject'],
-            'priority'        => $t['priority'],
-            'waiting'         => format_waiting_time($t['waiting_minutes']),
+            'id' => $t['id'],
+            'ticket_number' => $t['ticket_number'],
+            'subject' => $t['subject'],
+            'priority' => $t['priority'],
+            'waiting' => format_waiting_time($t['waiting_minutes']),
             'waiting_minutes' => $t['waiting_minutes'],
         );
     }

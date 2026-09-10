@@ -1,0 +1,13 @@
+Check IP Address of printer everytime if they need to connect
+
+Miss Jane - Cage Office
+    Need at least one telephone on cage at cashier
+    Transfer one telephone but need tracing of voice LAN
+    6 Dot Matrix Printer
+    7 PC setup (5 with CMS and two without CMS)
+
+SSD Biometrics - Done
+    Data 1 to Port 25 in UG ECE
+
+Twistlock - Done
+    Mezzanine EE and ECE

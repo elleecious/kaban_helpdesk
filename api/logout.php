@@ -1,5 +1,5 @@
 <?php
-include('../includes/connect.php');
+include('../config/connect.php');
 include('../library/functions.php');
 session_start();
 
@@ -17,14 +17,14 @@ if (ini_get("session.use_cookies")) {
 
     manage("INSERT INTO logs (username,computer_name,ip_address,page,action,details,date)
             VALUES (?,?,?,?,?,?,?)
-            ",array($login_id, gethostbyaddr($_SERVER['REMOTE_ADDR']),
+            ",array($get_username[0]['username'], gethostbyaddr($_SERVER['REMOTE_ADDR']),
             getLocalIP(),"HOME",
             "LOGOUT",
             "<details>
                 <p>User Logout</p>
                 <p>Username: ".$get_username[0]['username']."</p>
             </details>",
-            date("Y-m-d H:i:s a")
+            date("Y-m-d H:i:s")
         )
     );
 

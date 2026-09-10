@@ -1,11 +1,10 @@
 function loadOverdueAlert() {
     $.ajax({
-        url: "./actions/get_overdue_tickets.php",
+        url: "./api/get_overdue_tickets.php",
         type: "GET",
         dataType: 'JSON',
         success: function(response) {
             var $container = $("#overdueAlertContainer");
-
             if (response.status === 'success' && response.tickets.length > 0) {
                 var count = response.tickets.length;
                 var parts = response.tickets.map(function(t) {
@@ -26,6 +25,7 @@ function loadOverdueAlert() {
             }
         },
         error: function(xhr, status, error) {
+            console.log("Error: ", error);
             console.log("Ajax Error: " + xhr.responseText);
             console.log("Ajax Status: " + status);
             $("#overdueAlertContainer").empty();
@@ -35,7 +35,7 @@ function loadOverdueAlert() {
 
 function loadAttentionAlert() {
     $.ajax({
-        url: "./actions/get_attention_summary.php",
+        url: "./api/get_attention_summary.php",
         type: "GET",
         dataType: 'JSON',
         success: function(response) {
@@ -69,6 +69,7 @@ function loadAttentionAlert() {
             $container.html(html);
         },
         error: function(xhr, status, error) {
+            console.log("Error: " + error);
             console.log("Ajax Error: " + xhr.responseText);
             console.log("Ajax Status: " + status);
             $("#attentionAlertContainer").html('<tr><td colspan="5" class="text-center text-danger">Failed to load tickets.</td></tr>');
@@ -111,7 +112,7 @@ $(document).on('click', '.assign_ticket', function(e) {
     );
 
     $.ajax({
-        url: "./actions/get_agents.php",
+        url: "./api/get_agents.php",
         type: "GET",
         dataType: 'JSON',
         success: function(response) {
@@ -156,67 +157,33 @@ $("#btnConfirmAssign").click(function() {
     $btn.prop('disabled', true).text('Assigning...');
 
     $.ajax({
-        url: "./actions/assign_ticket.php",
+        url: "./api/assign_ticket.php",
         type: "POST",
         data: { ticket_id: currentAssignTicketId, agent_id: agentId },
         dataType: 'JSON',
         success: function(response) {
+            console.log(response);
             $btn.prop('disabled', false).text('Confirm Assign');
 
             if (response.status === 'success') {
                 $('#assignTicketModal').modal('hide');
                 Swal.fire('Assigned!', 'Ticket #' + currentAssignTicketId + ' has been assigned.', 'success')
-                    .then(function() { location.reload(); }); // or remove the row via JS instead of a full reload
+                    .then(function() { location.reload(); });
             } else {
                 Swal.fire('Error!', response.message, 'error');
             }
-        }
-    });
-});
-
-
-    // Fetch and populate when the modal opens
-$('#unassignedTicketsModal').on('show.bs.modal', function() {
-    $("#unassignedTicketsBody").html('<tr><td colspan="5" class="text-center">Loading...</td></tr>');
-
-    $.ajax({
-        url: "./actions/get_unassigned_tickets.php",
-        type: "GET",
-        dataType: 'JSON',
-        success: function(response) {
-            if (response.status === 'success' && response.tickets.length > 0) {
-                var rows = '';
-                response.tickets.forEach(function(t) {
-                    var waitingClass = t.waiting_minutes > 60 ? 'text-danger font-weight-bold' : 'text-muted';
-                    var priorityClass = 
-                        t.priority === 'Critical' ? 'badge-danger' :
-                        t.priority === 'High' ? 'badge-warning' :
-                        t.priority === 'Medium' ? 'badge-info' : 'badge-secondary';
-
-                    rows += `
-                        <tr>
-                            <td>#${t.ticket_number}</td>
-                            <td>${t.subject}</td>
-                            <td><span class="badge ${priorityClass}" style='font-size:1rem;'>${t.priority}</span></td>
-                            <td class="${waitingClass}">${t.waiting}</td>
-                            <td><button class="btn btn-sm btn-primary btn-claim" data-id="${t.id}">Claim</button></td>
-                        </tr>`;
-                });
-                $("#unassignedTicketsBody").html(rows);
-            } else {
-                $("#unassignedTicketsBody").html('<tr><td colspan="5" class="text-center text-muted">No unassigned tickets right now.</td></tr>');
-            }
         },
-        error: function(xhr, status,error) {
-            console.log("Ajax Error: " + xhr.responseText);
-            console.log("Ajax Status: " + status);
-            $("#unassignedTicketsBody").html('<tr><td colspan="5" class="text-center text-danger">Failed to load tickets.</td></tr>');
+        error: function(xhr) {
+            $btn.prop('disabled', false).text('Confirm Assign');
+            Swal.fire('Error!', 'Something went wrong assigning this ticket.', 'error');
+            console.log(xhr.responseText); // helps you see the actual PHP error while debugging
         }
     });
 });
+
 
 // Claim button — delegated event since rows are injected dynamically
-    $("#claim_ticket").on("click", function(e) {
+    $(".btn-claim").on("click", function(e) {
         
         e.preventDefault();
 
@@ -227,7 +194,7 @@ $('#unassignedTicketsModal').on('show.bs.modal', function() {
         $btn.prop('disabled', true).text('Claiming...');
 
         $.ajax({
-            url: "./actions/pickup_ticket.php",
+            url: "./api/pickup_ticket.php",
             type: "POST",
             data: { ticket_id: ticketId },
             dataType: 'JSON',
@@ -239,7 +206,7 @@ $('#unassignedTicketsModal').on('show.bs.modal', function() {
                         icon: 'success',
                         confirmButtonText: 'View Ticket'
                     }).then(function() {
-                        window.location.href = 'ticket_detail.php?id=' + response.ticket_id;
+                        window.location.reload();
                     });
                 } else if (response.status === 'already_claimed') {
                     Swal.fire('Too Late!', 'Someone already claimed this ticket.', 'info');
@@ -256,19 +223,67 @@ $('#unassignedTicketsModal').on('show.bs.modal', function() {
         });
     });
 
+    $("#btnMarkResolved").on('click',function() {
+        var $btn = $(this);
+        var ticketId = $btn.data('ticket-id');
+        var notes = $("#resolutionNotes").val().trim();
 
-    $("#add_ticket").on("click", function(e) {
-        e.preventDefault(); // only strictly needed if this button is type="submit" inside a <form>
+        if (notes === '') {
+            Swal.fire('Add Resolution Notes', 'Please describe what was done before marking this resolved.', 'warning');
+            return;
+        }
 
-        var formData = new FormData($("#frmCreateTicket")[0]);
-
-        formData.append("subject", $("#subject").val());
-        formData.append("description", $("#description").val());
-        formData.append("category", $("#category").val());
-        formData.append("attachment", $("#attachment")[0].files[0]);
+        $btn.prop('disabled', true).text('Resolving...');
 
         $.ajax({
-            url: "./actions/add_tickets.php",
+            url: "./api/resolve_ticket.php",
+            type: "POST",
+            data: { ticket_id: ticketId, resolution_notes: notes },
+            dataType: 'JSON',
+            success: function(response) {
+                console.log(response);
+                if (response.status === 'success') {
+                    Swal.fire('Resolved!', 'The ticket has been marked as resolved.', 'success')
+                        .then(function() { location.reload(); });
+                } else {
+                    Swal.fire('Error!', response.message, 'error');
+                    $btn.prop('disabled', false).text('Mark as Resolved');
+                }
+            },
+            error: function() {
+                Swal.fire('Error!', 'Something went wrong.', 'error');
+                $btn.prop('disabled', false).text('Mark as Resolved');
+            }
+        });
+    });
+
+    $('#category').on('change', function () {
+        if ($(this).val() === 'Others') {
+            $('#other_category_container').removeClass('d-none');
+            $('#other_category').prop('required', true);
+        } else {
+            $('#other_category_container').addClass('d-none');
+            $('#other_category').prop('required', false);
+            $('#other_category').val('');
+        }
+    });
+
+    $("#add_ticket").on("click", function(e) {
+        e.preventDefault();
+
+        var formElement = $("#frmCreateTicket")[0];
+        var formData = new FormData(formElement);
+
+        // Only append attachment manually if it is NOT inside #frmCreateTicket
+        // AND a file is actually selected.
+        var fileInput = $("#attachment")[0];
+        if (fileInput && fileInput.files && fileInput.files.length > 0) {
+            // Only needed if #attachment is outside the <form id="frmCreateTicket">
+            formData.append("attachment", fileInput.files[0]);
+        }
+
+        $.ajax({
+            url: "./api/add_tickets.php",
             type: "POST",
             data: formData,
             processData: false,
@@ -284,44 +299,45 @@ $('#unassignedTicketsModal').on('show.bs.modal', function() {
                         icon: 'success',
                         confirmButtonText: 'OK'
                     }).then(function() {
-                        window.location.href = 'ticket_detail.php?id=' + response.ticket_id;
+                        window.location.reload();
                     });
-                } else if (response.status === 'partial') {
+                // Handle BOTH 'warning' and 'partial' status codes
+                } else if (response.status === 'warning' || response.status === 'partial') {
                     Swal.fire({
                         title: 'Ticket Created',
                         text: response.message,
                         icon: 'warning',
                         confirmButtonText: 'OK'
+                    }).then(function() {
+                        window.location.reload();
                     });
-                    $("#frmCreateTicket")[0].reset();
                 } else {
                     Swal.fire({
                         title: 'Error!',
-                        text: response.message,
+                        text: response.message || 'Failed to process request.',
                         icon: 'error',
                         confirmButtonText: 'OK'
                     });
                 }
             },
             error: function(xhr, status, error) {
-                console.log("Ajax Error: " + xhr.responseText);
-                console.log("Ajax Status: " + status);
+                console.log("Ajax Error: ", xhr.responseText);
                 Swal.fire({
                     title: 'Error!',
                     text: 'An error occurred: ' + error,
                     icon: 'error',
                     confirmButtonText: 'OK'
                 });
-                
             }
         });
     });
+    
     
     $("#add_users").on("click", function(e){
         e.preventDefault();
 
         $.ajax({
-            url:"./actions/add_users.php",
+            url:"./api/add_users.php",
             type:"POST",
             data:{
                 name: $("#name").val(),
@@ -357,12 +373,96 @@ $('#unassignedTicketsModal').on('show.bs.modal', function() {
         });
     });
 
+    $("#save_password").on('click', function(e){
+        e.preventDefault();
+
+        var currentPassword = $('#current_password').val();
+        var newPassword = $('#new_password').val();
+        var confirmPassword = $('#confirm_password').val();
+
+        if (newPassword !== confirmPassword) {
+            Swal.fire({
+                title: 'Error!',
+                text: 'Passwords do not match',
+                icon: 'error',
+                confirmButtonText: 'OK'
+            });
+        }
+
+        $.ajax({
+            url: "./api/save_password.php",
+            type: 'POST',
+            data: { 
+                current_password:currentPassword,
+                new_password:newPassword
+            },
+            dataType: 'JSON',
+            success: function(response) { 
+                Swal.fire({
+                    title: response.status === 'success' ? 'Success!' : 'Error!',
+                    text: response.message,
+                    icon: response.status === 'success' ? 'success' : 'error',
+                    confirmButtonText: 'OK'
+                });
+                setTimeout(function(){
+                    location.reload();
+                }, 1000);
+            },
+            error: function(error) {
+                Swal.fire({
+                    title: 'Error!',
+                    text: 'An error occurred: ' + error,
+                    icon: 'error',
+                    confirmButtonText: 'OK'
+                });
+            }
+        });
+    });
+
+    $("#add_kba").on("click",function(e){
+
+        e.preventDefault();
+
+        $.ajax({
+            url: "./api/add_kb_articles.php",
+            type: "POST",
+            data: {
+                kba_title:$("#kba_title").val(),
+                kba_description:$("#kba_description").val(),
+                kba_category:$("#kba_category").val(),
+            },
+            dataType: "JSON",
+            success: function(response) {
+                console.log(response);
+                Swal.fire({
+                    title: response.status === 'success' ? 'Success!' : 'Error!',
+                    text: response.message,
+                    icon: response.status === 'success' ? 'success' : 'error',
+                    confirmButtonText: 'OK',
+                });
+                setTimeout(function(){
+                    location.reload();
+                }, 1000);
+            },
+            error: function(xhr, status, error) {
+                console.log("Ajax Error: " + xhr.responseText);
+                console.log("Ajax Status: " + status);
+                Swal.fire({
+                    title: 'Error!',
+                    text: 'An error occurred: ' + error,
+                    icon: 'error',
+                    confirmButtonText: 'OK'
+                });
+            }
+        });
+    });
+
     $("#add_category").on("click", function(e){
         
         e.preventDefault();
 
         $.ajax({
-            url:'./actions/add_categories.php',
+            url:'./api/add_categories.php',
             type:'POST',
             data:{
                 category_code:$("#category_code").val(),
@@ -400,7 +500,7 @@ $('#unassignedTicketsModal').on('show.bs.modal', function() {
         e.preventDefault();
 
         $.ajax({
-            url:'./actions/save_categories.php',
+            url:'./api/save_categories.php',
             type:'POST',
             data:{
                 edit_category_id:$("#edit_category_id").val(),
@@ -439,12 +539,12 @@ $('#unassignedTicketsModal').on('show.bs.modal', function() {
         e.preventDefault();
 
         $.ajax({
-            url:'./actions/add_sla_rules.php',
+            url:'./api/add_sla_rules.php',
             type:'POST',
             data:{
                 category: $("#category").val(),
                 priority: $("#priority").val(),
-                response_hours: $("#response_hours").val(),
+                response_minutes: $("#response_minutes").val(),
                 resolution_hours: $("#resolution_hours").val(),
             },
             dataType:'json',
@@ -479,13 +579,13 @@ $('#unassignedTicketsModal').on('show.bs.modal', function() {
         e.preventDefault();
 
         $.ajax({
-            url:'./actions/save_sla_rules.php',
+            url:'./api/save_sla_rules.php',
             type: 'POST',
             data:{
                 edit_sla_id:$("#edit_sla_id").val(),
                 edit_sla_cat_id:$("#edit_sla_cat_id").val(),
                 edit_sla_priority:$("#edit_sla_priority").val(),
-                edit_sla_response_hours:$("#edit_sla_response_hours").val(),
+                edit_sla_response_minutes:$("#edit_sla_response_minutes").val(),
                 edit_sla_resolution_hours:$("#edit_sla_resolution_hours").val(),
             },
             dataType:'json',
@@ -520,7 +620,7 @@ $('#unassignedTicketsModal').on('show.bs.modal', function() {
         e.preventDefault();
 
         $.ajax({
-            url: './actions/login.php',
+            url: './api/login.php',
             type: 'POST',
             data: {
                 email: $('#email').val(),
@@ -565,7 +665,7 @@ $('#unassignedTicketsModal').on('show.bs.modal', function() {
         e.preventDefault();
 
         $.ajax({
-            url: './actions/logout.php',
+            url: './api/logout.php',
             type: 'POST',
             dataType: 'json', 
             success: function(response) {

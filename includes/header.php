@@ -1,5 +1,5 @@
 <!-- include connect for database communication -->
-<?php include("connect.php");?>
+<?php include("config/connect.php");?>
 <!-- include url for url identification-->
 <?php include("url.php");?>
 

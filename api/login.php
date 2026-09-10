@@ -1,6 +1,6 @@
 <?php
 
-include('../includes/connect.php');
+include('../config/connect.php');
 include('../library/functions.php');
 
 session_start();
@@ -39,7 +39,7 @@ if ($user) {
                     <p>User Login</p>
                     <p>Email: ".$email."</p>
                 </details>",
-                date("Y-m-d H:i:s a")
+                date("Y-m-d H:i:s")
             )
         );
 

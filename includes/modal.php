@@ -100,7 +100,7 @@
                 <div class="col-md-6 mt-2">
                     <small>Response Hours</small>
                     <input class="form-control form-control-sm" type="number" 
-                          name="response_hours" id="response_hours" 
+                          name="response_minutes" id="response_minutes" 
                           step="0.25" min="0" placeholder="e.g. 0.5">
                 </div>
                 <div class="col-md-6 mt-2">
@@ -158,7 +158,7 @@
                   <div class="col-md-6 mt-2">
                       <small>Response Hours</small>
                       <input class="form-control form-control-sm" type="number" 
-                            name="edit_sla_response_hours" id="edit_sla_response_hours" 
+                            name="edit_sla_response_minutes" id="edit_sla_response_minutes" 
                             step="0.25" min="0" placeholder="e.g. 0.5">
                   </div>
                   <div class="col-md-6 mt-2">
@@ -199,8 +199,31 @@
               ?>
               </tr>
             </thead>
-            <tbody id="unassignedTicketsBody">
-               
+            <tbody>
+               <?php
+                    $get_unassigned_tickets = retrieve("SELECT id, ticket_number, subject, priority, 
+                      TIMESTAMPDIFF(MINUTE, created_at, NOW()) AS waiting_minutes
+                    FROM tickets WHERE assigned_to IS NULL AND status = 'Open'
+                    ORDER BY 
+                    FIELD(priority, 'Critical','High','Medium','Low'), created_at ASC",array());
+                    if (count($get_unassigned_tickets) > 0) {
+                      for ($i=0; $i < count($get_unassigned_tickets); $i++) { 
+                        echo "<tr>
+                            <td>".$get_unassigned_tickets[$i]['ticket_number']."</td>
+                            <td>".$get_unassigned_tickets[$i]['subject']."</td>
+                            <td>".$get_unassigned_tickets[$i]['priority']."</td>
+                            <td>".format_waiting_time($get_unassigned_tickets[$i]['waiting_minutes'])."</td>
+                            <td><a class='btn btn-sm btn-primary btn-claim' data-id='".$get_unassigned_tickets[$i]['id']."'>Claim</a></td>
+                        </tr>";
+                      }
+                    } else {
+                      echo "<tr>
+                              <td colspan='5' class='text-center'>
+                                <h3 class='alert alert-warning'><span class='fa fa-info-circle'></span> No unassigned tickets right now. </h3>
+                              </td>
+                            </tr>";
+                    }
+               ?>
             </tbody>
           </table>
       </div>
