@@ -15,7 +15,7 @@
                     <?php
                         $getAllTickets = retrieve("SELECT t.id AS ticked_id, t.created_by AS emp_name, cat.name AS category_name, t.ticket_number AS ticket_number, 
                             t.subject AS subject, t.description AS description, t.priority AS priority, t.status AS status, t.created_at AS created_at
-                            FROM tickets AS t INNER JOIN categories AS cat ON t.category_id=cat.id WHERE emp_name=?",array($login_id));
+                            FROM tickets AS t INNER JOIN categories AS cat ON t.category_id=cat.id WHERE t.created_by=?",array($login_id));
 
                         if ($getAllTickets) {
 

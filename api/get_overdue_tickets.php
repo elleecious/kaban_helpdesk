@@ -1,6 +1,6 @@
 <?php
 
-    include('../includes/connect.php');
+    include('../config/connect.php');
     include('../includes/session.php');
     include('../library/functions.php');
 

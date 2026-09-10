@@ -6,19 +6,30 @@
     if (!isset($_GET['id'])) {
         header("location: index.php");
     }
-    $getTicket = retrieve("SELECT cat.name AS category_name, t.ticket_number AS ticket_number, t.subject AS subject, t.description AS description, t.priority AS priority, t.status AS status
-FROM tickets AS t INNER JOIN categories AS cat ON t.category_id=cat.id WHERE t.id=?",array($_GET['id']));
+    $getTicket = retrieve("SELECT t.id AS ticket_id, emp.name AS created_by_name,
+                    it.name AS assigned_to_name,cat.name AS category_name,t.ticket_number,
+                    t.subject, t.description,
+                    t.priority,t.status,
+                    t.response_due_at, t.resolution_due_at
+                  FROM tickets AS t
+                  LEFT JOIN categories AS cat 
+                      ON t.category_id = cat.id
+                  LEFT JOIN users AS emp 
+                      ON t.created_by = emp.id
+                  LEFT JOIN users AS it 
+                      ON t.assigned_to = it.id
+                  WHERE t.id=?",array($_GET['id']));
 ?>
 
 
 <div class="container my-4" style="max-width: 1080px;">
-
+  
   <div class="d-flex justify-content-between align-items-start mb-3">
     <div>
-      <p class="text-muted mb-1" style="font-size:15px;">Ticket &middot; <?php echo htmlspecialchars($getTicket[0]['ticket_number']); ?></p>
-      <h4 class="mb-0 fw-bold"><?php echo $getTicket[0]['subject']; ?></h4>
+      <p class="text-muted mb-1" style="font-size:15px;">Ticket &middot; <?= htmlspecialchars($getTicket[0]['ticket_number']); ?></p>
+      <h4 class="mb-0 fw-bold"><?= $getTicket[0]['subject']; ?></h4>
     </div>
-    <span class="badge" style="font-size: 25px;" id="statusTicket"><?php echo htmlspecialchars($getTicket[0]['status']); ?></span>
+    <span class="badge" style="font-size: 25px;" id="statusTicket"><?= htmlspecialchars($getTicket[0]['status']); ?></span>
   </div>
 
   <div class="row g-3">
@@ -28,7 +39,7 @@ FROM tickets AS t INNER JOIN categories AS cat ON t.category_id=cat.id WHERE t.i
       <div class="card mb-3">
         <div class="card-body">
           <p class="card-eyebrow mb-2">Description</p>
-          <p class="mb-3"><?php echo htmlspecialchars($getTicket[0]['description']); ?></p>
+          <p class="mb-3"><?= $getTicket[0]['description']; ?></p>
           <a class="attachment-chip" href="#">
             <i class="fa-solid fa-paperclip"></i> printer_error.jpg
           </a>
@@ -43,7 +54,7 @@ FROM tickets AS t INNER JOIN categories AS cat ON t.category_id=cat.id WHERE t.i
             <div class="avatar-circle avatar-blue"><span class="fa fa-user-circle fa-xl"></span>&nbsp;</div>
             <div>
               <p class="mb-0" style="font-size:0.85rem;">
-                <span class="fw-semibold">Ellee</span>
+                <span class="fw-semibold"><?= htmlspecialchars($getTicket[0]['created_by_name']); ?></span>
                 <span class="text-muted">created this ticket &middot; 11:19 AM</span>
               </p>
             </div>
@@ -101,11 +112,11 @@ FROM tickets AS t INNER JOIN categories AS cat ON t.category_id=cat.id WHERE t.i
           <p class="card-eyebrow mb-2">SLA</p>
           <div class="sla-row">
             <span class="sla-key">Response due</span>
-            <span class="sla-val">Today, 7:19 PM</span>
+            <span class="sla-val"><?= date('M d, Y g:i A', strtotime($getTicket[0]['response_due_at'])); ?></span>
           </div>
           <div class="sla-row">
             <span class="sla-key">Resolution due</span>
-            <span class="sla-val">Aug 15, 11:19 AM</span>
+            <span class="sla-val"><?= date('M d, Y g:i A', strtotime($getTicket[0]['resolution_due_at'])); ?></span>
           </div>
         </div>
       </div>
@@ -113,25 +124,25 @@ FROM tickets AS t INNER JOIN categories AS cat ON t.category_id=cat.id WHERE t.i
       <div class="card mb-3">
         <div class="card-body">
           <p class="card-eyebrow mb-2">Assigned to</p>
-          <select class="form-select form-select-sm" id="assigneeSelect">
-            <option>Unassigned</option>
-            <option selected>Jomar (IT)</option>
-            <option>Angge (IT)</option>
-          </select>
+          <span class="font-weight-bold"><?= $getTicket[0]['assigned_to_name']; ?></span>
         </div>
       </div>
 
-      <div class="card">
-        <div class="card-body">
-          <p class="card-eyebrow mb-2">Status</p>
-          <select class="form-select form-select-sm" id="statusSelect">
-            <option>Open</option>
-            <option>In progress</option>
-            <option>Resolved</option>
-            <option>Closed</option>
-          </select>
+      <?php
+        if ($role === "IT Support Specialist") {
+        ?>
+        <?php if (!in_array($getTicket[0]['status'], ['Resolved', 'Closed'])): ?>
+        <div class="card mt-3">
+            <div class="card-body">
+                <label>Resolution Notes</label>
+                <textarea class="form-control" id="resolutionNotes" rows="3" placeholder="What was done to fix this?" style="resize:none;"></textarea>
+                <button class="btn btn-success mt-2" id="btnMarkResolved" data-ticket-id="<?= $getTicket[0]['ticket_id'] ?>">
+                    Mark as Resolved
+                </button>
+            </div>
         </div>
-      </div>
+        <?php endif; ?>
+       <?php } ?>
 
     </div>
 

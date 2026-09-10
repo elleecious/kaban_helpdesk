@@ -19,21 +19,12 @@
 
   .brand-bar{
     background: var(--kaban-purple);
-    background: linear-gradient(90deg, var(--kaban-purple-dark), var(--kaban-purple));
-    padding: 14px 0;
+    border-bottom:1px solid var(--line, #e6e1ec);
+    padding:14px 0;
   }
-  .brand-bar .logo-mark{
-    width: 42px; height: 42px;
-    display: inline-flex; align-items:center; justify-content:center;
-    background: var(--kaban-red);
-    border-radius: 10px;
-    font-family:'Poppins', sans-serif; font-weight:700; color:#fff; font-size:1.1rem;
-  }
-  .brand-bar .brand-name{
-    font-family:'Poppins', sans-serif; font-weight:700; letter-spacing:.5px; color:#fff; font-size:1.05rem; line-height:1.1;
-  }
-  .brand-bar .brand-sub{
-    color: #cdb9e6; font-size:.68rem; letter-spacing: 2px; text-transform:uppercase;
+  .brand-logo{
+    height:32px;
+    width:auto;
   }
 
   .form-shell{

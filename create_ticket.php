@@ -15,7 +15,7 @@
                         <div class="card-body mt-3">
                             <div class="row">
                                 <div class="col-md-12">
-                                    <form method="POST" id="frmCreateTicket">
+                                    <form method="POST" id="frmCreateTicket" enctype="multipart/form-data">
                                         <div class="row">
                                             <div class="col-md-12 mt-2">
                                                 <label for="subject">Subject <span class="text-danger font-weight-bold">*</span></label>
@@ -35,7 +35,12 @@
                                                             echo "<option value='".$get_category[$i]['id']."'>".$get_category[$i]['name']."</option>";
                                                         }
                                                     ?>
+                                                    <option value="Others">Others</option>
                                                 </select>
+                                                <div class="d-none" id="other_category_container">
+                                                    <label for="subject">Please specify a Category <span class="text-danger font-weight-bold"></span></label>
+                                                    <input type="text" class="form-control form-control-sm" name="other_category" id="other_category" placeholder="e.g Service Request">
+                                                </div>
                                             </div>
                                             <div class="col-md-6 mt-2">
                                                 <label>Priority <span class="text-danger font-weight-bold">*</span></label>

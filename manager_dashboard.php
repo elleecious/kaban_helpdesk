@@ -2,6 +2,7 @@
 <?php include("includes/session.php"); ?>
 <?php include("includes/navbar.php"); ?>
 <?php include("library/functions.php"); ?>
+<?php include("library/stats.php"); ?>
 <?php $page_title = "KabanDesk"; ?>
 <div class="container">
     <div class="row mx-auto">
@@ -16,7 +17,7 @@
                     <div class="col-md-3">    
                         <div class="mt-3 border border-secondary">
                             <div class="p-2 text-center">
-                                <span style="font-size: 30px;"><?php echo $count_staff; ?></span>
+                                <span style="font-size: 30px;"><?= $count_staff; ?></span>
                                 <br><span>Total Staff Accounts</span>
                             </div>
                         </div>
@@ -24,7 +25,7 @@
                     <div class="col-md-3">    
                         <div class="mt-3 border border-secondary">
                             <div class="p-2 text-center">
-                                <span style="font-size: 30px;">12</span>
+                                <span style="font-size: 30px;"><?= $count_tickets; ?></span>
                                 <br><span>Total Tickets (All Time)</span>
                             </div>
                         </div>
@@ -32,7 +33,7 @@
                     <div class="col-md-3">
                         <div class="mt-3 border border-secondary">
                             <div class='p-2 text-center'>
-                                <span class="font-weight-bold" style="font-size: 30px;">12</span>
+                                <span class="font-weight-bold" style="font-size: 30px;"><?= $count_it_agents; ?></span>
                                 <br><span class="font-weight-bold">Active IT Support</span>
                             </div>
                         </div>
@@ -65,7 +66,7 @@
                         </div>
                     </div>
                     <div class="col-md-3 hvr-pulse">    
-                        <div class="card text-center" id="manage_cat_sla" style="cursor: pointer; background-color: #F77F00;">
+                        <div class="card text-center" id="manage_cat_sla" style="cursor: pointer; background-color: #101157;">
                             <div class="card-body white-text">
                                 <div class="p-0">
                                     <span class="fa fa-tags" style="font-size: 4rem;"></span>
@@ -78,13 +79,39 @@
                     </div>
 
                     <div class="col-md-3 hvr-pulse">    
-                        <div class="card text-center" id="manage_reports" style="cursor: pointer; background-color: #07DD05;">
+                        <div class="card text-center" id="full_reports" style="cursor: pointer; background-color: #07DD05;">
                             <div class="card-body white-text">
                                 <div class="p-2">
                                     <span class="fa fa-line-chart" style="font-size: 4rem;"></span>
                                 </div>
                                 <h5 class='card-title'>
                                     <span>Full Reports</span>
+                                </h5>
+                            </div>
+                        </div>
+                    </div>
+
+                     <div class="col-md-3 mt-2 hvr-pulse">    
+                        <div class="card text-center" id="knowledge_base" style="cursor: pointer; background-color: #721c72;">
+                            <div class="card-body white-text">
+                                <div class="p-2">
+                                    <span class="fa fa-book-open" style="font-size: 4rem;"></span>
+                                </div>
+                                <h5 class='card-title'>
+                                    <span>Knowledge Base</span>
+                                </h5>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-3 mt-2 hvr-pulse">    
+                        <div class="card text-center" id="change_request" style="cursor: pointer; background-color: #F77F00;">
+                            <div class="card-body white-text">
+                                <div class="p-2">
+                                    <span class="fa fa-refresh" style="font-size: 4rem;"></span>
+                                </div>
+                                <h5 class='card-title'>
+                                    <span>Change Request</span>
                                 </h5>
                             </div>
                         </div>
@@ -102,6 +129,7 @@
                             </div>
                         </div>
                     </div>
+
                 </div>
 
                 <hr>
@@ -128,6 +156,14 @@ $(document).ready(function(){
 
     $("#full_reports").click(function(e){
         window.location="full_reports.php";
+    });
+
+    $("#knowledge_base").click(function(e){
+        window.location="manage_kb_articles.php";
+    });
+
+    $("#change_request").click(function(e){
+        window.location="manage_change_request.php";
     });
 
     $("#logs").click(function(e){

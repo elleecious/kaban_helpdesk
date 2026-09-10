@@ -9,15 +9,26 @@ $dbname = "kaban_helpdesk_db";
 $dbusername = "root";
 $dbpassword = "";
 
+
 try {
     // Initialize PDO with error handling
-    $pdo = new PDO("mysql:host=$dbhost;dbname=$dbname", $dbusername, $dbpassword);
+    $pdo = new PDO(
+        "mysql:host=$dbhost;dbname=$dbname;charset=utf8mb4",
+        $dbusername,
+        $dbpassword,
+        [
+            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+            PDO::ATTR_EMULATE_PREPARES   => false
+        ]
+    );
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION); // Enable exceptions for errors
     $pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
 
 } catch (PDOException $e) {
     // Handle connection error
-    die("Could not connect to the database: " . $e->getMessage());
+    error_log("Database connection failed: " . $e->getMessage());
+    die("Could not connect to the database");
 }
 
 // Functions to be used for database
@@ -36,7 +47,7 @@ function manage($statement, $values){
         return $stmt->rowCount(); // Return the number of affected rows
     } catch (PDOException $e) {
         // Handle SQL errors
-        error_log("DB Error in retrieve(): ". $e->getMessage());
+        error_log("DB Error in manage(): ". $e->getMessage());
         return false;
     }
 }
