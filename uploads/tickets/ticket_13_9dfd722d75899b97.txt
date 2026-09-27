@@ -1,0 +1,62 @@
+Fortnitet
+FortiGate 100F
+PN:P24589-22-13
+S/N: FG100FTK25013257
+
+Fortnitet
+FortiGate 100F
+PN: P24589-22-13
+S/N: FG100FTK25013245
+
+-- NAS at Server --
+Synology DS1525+
+S/N: 2560YJRNJHCV2
+
+Synology
+RS822+
+S/N: 24C0UHRHJAZ2Y
+
+-- Slot Machine Switches --
+Bank 12 - JJBX
+Cisco C1300-24T-4G
+SN/: DNI290204VD
+
+Bank 3 - JJBX and 5 Dragons P
+Cisco C1300-16T-2G
+S/N: DNI29260682
+
+Bank 5 - JJBX
+Cisco C1300-16T-2G
+S/N: DNI292605US
+
+Bank 6 - DFDC
+Cisco C1300-16T-2G
+S/N: DNI2926068M
+
+Bank 7 - Yao Qian Shu
+Cisco C1300-24T-4G
+S/N: DNI290204VQ
+
+Bank 9 Shen Long
+Cisco C1300-16T-2G
+S/N: DNI292708SC
+
+Bank 10 Coin Trio
+Cisco C1300-16T-2G
+S/N: DNI2926068R
+
+Bank 11 Fa Fa Fa
+Cisco C1300-24T-4G
+DNI290204VW
+
+Bank 13 - Bab Ba Da Fa
+Cisco C1300-16T-2G
+S/N: DNI292605PH
+
+Bank 14 - DFDC & Multi Games
+Cisco C1300-16T-2G
+S/N: DNI292605PH
+
+Russian roulette 6 machines
+Cisco C1300-8T-E-2G
+S/N: PVN29201AT6

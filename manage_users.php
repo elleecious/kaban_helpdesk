@@ -1,11 +1,12 @@
 <?php include("includes/header.php"); ?>
 <?php include("includes/session.php"); ?>
 <?php include("includes/navbar.php"); ?>
+<?php include("includes/modal.php"); ?>
 <?php $page_title="KabanDesk"; ?>
 
 <div class="mt-5">
     <div class="row mx-auto">
-        <div class="col-md-12 mb-2">
+        <div class="col-md-12 mt-5">
             <div class="row">
                 <div class="col-md-4">
                     <div class="card rounded-0">
@@ -35,7 +36,7 @@
                                                     $department = array("Information Technology","Human Resources","Housekeeping","Engineering",
                                                     "Slot and Electronic Table Games","Table Games","Sales & Marketing","Cage",
                                                     "Surveillance","Warehouse","Gaming Security","Finance & Accounting",
-                                                    "Building Management","Front Office","Food and Beverage","Purchasing");
+                                                    "Building Management","Front Office","Food and Beverage","Purchasing", "Upper Management");
                                                     sort($department);
                                                     for ($i=0; $i < count($department); $i++) { 
                                                         echo "<option value='".$department[$i]."'>".$department[$i]."</option>";
@@ -71,7 +72,7 @@
                                 <thead>
                                     <tr>    
                                         <?php
-                                            $thead_user = explode(",","Name, Email Address, Role, Department, Username, Date Created, Actions");
+                                            $thead_user = explode(",","Name, Email Address, Role, Department, Username, Status, Date Created, Actions");
                                             foreach($thead_user as $th_user){
                                                 echo "<th>".$th_user."</th>";
                                             }
@@ -81,19 +82,30 @@
                                <tbody>
                                    <?php
                                         $get_users = retrieve("SELECT * FROM users",array());
-                                        for($i=0; $i < COUNT($get_users); $i++){
-                                            echo "
-                                            <tr>
-                                                <td>".$get_users[$i]['name']."</td>
-                                                <td>".$get_users[$i]['email']."</td>
-                                                <td>".$get_users[$i]['role']."</td>
-                                                <td>".$get_users[$i]['department']."</td>
-                                                <td>".$get_users[$i]['username']."</td>
-                                                <td>".$get_users[$i]['created_at']."</td>
+                                        foreach($get_users as $users){
+                                           echo "
+                                                <tr>
+                                                <td>".$users['name']."</td>
+                                                <td>".$users['email']."</td>
+                                                <td>".$users['role']."</td>
+                                                <td>".$users['department']."</td>
+                                                <td>".$users['username']."</td>
+                                                <td>".($users['status'] == 1 ? "<span class='fa fa-solid fa-circle fa-xs text-success'></span> Active" : "<span class='fa fa-solid fa-circle fa-xs text-muted'></span> Inactive")."</td>
+                                                <td>".$users['created_at']."</td>
                                                 <td>
-                                                    <span class='btn btn-primary btn-sm'>Edit</span>
+                                                   ".($users['status'] == 1 ? "<span class='btn btn-danger btn-sm toggle_status' data-id='".(int)$users['id']."' data-status='1' title='Deactivate'><i class='fa fa-unlock fa-lg'></i></span>" 
+                                                    : "<span class='btn btn-success btn-sm toggle_status' data-id='".(int)$users['id']."' data-status='0' title='Activate'><i class='fa fa-lock fa-lg'></i></span>")."
+
+                                                    <span class='btn btn-info btn-sm reset_password' 
+                                                        data-id='".(int)$users['id']."'
+                                                        data-name='".htmlspecialchars($users['name'], ENT_QUOTES)."'
+                                                        data-toggle='modal' data-target='#resetPasswordModal'
+                                                    title='Reset Password' data-placement='top' data-toggle='tooltip'>
+                                                        <i class='fa fa-solid fa-key fa-lg'></i>
+                                                    </span>
                                                 </td>
-                                            </tr>";
+                                            </tr>
+                                           ";
                                         }
                                    ?>
                                </tbody>
@@ -108,6 +120,8 @@
 <?php include("includes/footer.php"); ?>
 <script>
 $(document).ready(function () {
+    // tooltip initialization
+	$('[data-toggle="tooltip"]').tooltip();
     $("#tblManageUsers").DataTable({
 		"scrollX": true,
 		"info": true,

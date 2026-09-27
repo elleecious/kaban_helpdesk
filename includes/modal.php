@@ -98,7 +98,7 @@
               </div>
               <div class="row">
                 <div class="col-md-6 mt-2">
-                    <small>Response Hours</small>
+                    <small>Response Minutes</small>
                     <input class="form-control form-control-sm" type="number" 
                           name="response_minutes" id="response_minutes" 
                           step="0.25" min="0" placeholder="e.g. 0.5">
@@ -252,3 +252,43 @@
         </div>
     </div>
 </div>
+
+<!-- Reset Password Modal -->
+<div class="modal fade" id="resetPasswordModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Reset Password</h5>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p>Resetting password for: <strong id="resetPasswordName"></strong></p>
+
+                <label>New Password</label>
+                <div class="input-group">
+                    <input type="text" class="form-control form-control-md" id="newPassword" placeholder="Enter or generate a password">
+                    <div class="input-group-append" style="margin-top: -10px;">
+                        <button class="btn btn-outline-secondary btn-md" type="button" id="btnGeneratePassword">Generate</button>
+                    </div>
+                </div>
+                <small class="text-muted">Minimum 4 characters. Share this with the user securely — it won't be shown again.</small>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="btnConfirmReset">Confirm Reset</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Trigger Button inside Table Cell -->
+<td>
+    <button type="button" 
+            class="btn btn-info btn-sm reset_password" 
+            data-id="<?php echo htmlspecialchars($get_users[$i]['id']); ?>"
+            data-name="<?php echo htmlspecialchars($get_users[$i]['name']); ?>"
+            data-toggle="modal" 
+            data-target="#resetPasswordModal">
+        Reset Password
+    </button>
+</td>

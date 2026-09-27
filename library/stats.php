@@ -1,14 +1,70 @@
 <?php
 
-    //counting
-    $get_staff = retrieve("SELECT * FROM users",array());
-    $count_staff = count($get_staff);
+    // User Total Tickets
+    $count_user_tickets = retrieve("SELECT COUNT(*) AS cnt FROM tickets WHERE created_by=?", array($login_id))[0]['cnt'];
 
-    $get_total_tickets = retrieve("SELECT * FROM tickets",array());
-    $count_tickets = count($get_total_tickets);
+    // User Total Open Tickets
+    $count_user_open_tickets = retrieve("SELECT COUNT(*) AS cnt FROM tickets WHERE status = 'Open' AND created_by=?", array($login_id))[0]['cnt'];
 
-    $get_it_agents = retrieve("SELECT * FROM users WHERE role=?",array("IT Support Specialist"));
-    $count_it_agents = count($get_it_agents);
+    // User Resolved Tickets
+    $count_user_resolved_tickets = retrieve("SELECT COUNT(*) AS cnt FROM tickets WHERE status = 'Resolved' AND created_by=?", array($login_id))[0]['cnt'];
+
+    // User Awaiting Response
+    $count_user_awaiting = retrieve("SELECT COUNT(*) AS cnt FROM tickets WHERE status = 'In Progress' AND created_by=?", array($login_id))[0]['cnt'];
+
+
+    //Count staff
+    $count_staff = retrieve("SELECT COUNT(*) AS cnt FROM users",array())[0]['cnt'];
+
+    $count_tickets = retrieve("SELECT COUNT(*) AS cnt FROM tickets",array())[0]['cnt'];
+
+    $count_it_agents = retrieve("SELECT COUNT(*) AS cnt FROM users WHERE role=?",array("IT Support Specialist"))[0]['cnt'];
+
+
+    //IT Support Counting
+
+    //Count Open
+    $count_open_tickets = retrieve("SELECT COUNT(*) AS cnt FROM tickets WHERE status = 'Open'", array())[0]['cnt'];
+
+    //Assigned to me
+    $count_tickets_assigned_to_me = retrieve("SELECT COUNT(*) AS cnt FROM tickets WHERE assigned_to = ?",array($login_id))[0]['cnt'];
+
+    //In Progress
+    $count_it_in_progress = retrieve("SELECT COUNT(*) AS cnt FROM tickets WHERE status = 'In Progress' AND assigned_to=?", array($login_id))[0]['cnt'];
+
+    // Overdue (SLA)
+    $count_it_overdue = retrieve("SELECT COUNT(*) AS cnt FROM tickets WHERE 
+        assigned_to = ? AND status NOT IN ('Resolved', 'Closed') AND resolution_due_at < NOW()",
+        array($login_id))[0]['cnt'];
+
+    //Resolved Today
+    $count_it_resolve_tickets = retrieve("SELECT COUNT(*) AS cnt FROM tickets WHERE 
+        status = 'Resolved' AND assigned_to = ? AND DATE(resolved_at) = CURDATE()",
+        array($login_id))[0]['cnt'];
+
+    //Average Resolution Time (Last 30 Days)
+    $avg_resolution_time = retrieve("SELECT AVG(TIMESTAMPDIFF(MINUTE, created_at, resolved_at)) AS avg_resolution_minutes
+        FROM tickets
+        WHERE status IN ('Resolved', 'Closed') AND assigned_to = ? AND resolved_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)",
+        array($login_id))[0]['avg_resolution_minutes'];
+    
+    // Calculate compliance rate (percentage of tickets resolved within SLA in the last 30 days)
+    $total_resolved_30d = retrieve("SELECT COUNT(*) AS cnt FROM tickets WHERE
+        status IN ('Resolved', 'Closed') AND assigned_to = ? AND resolved_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)",
+        array($login_id))[0]['cnt'];
+    $on_time_30d = retrieve("SELECT COUNT(*) AS cnt FROM tickets WHERE
+        status IN ('Resolved', 'Closed') AND assigned_to = ? AND resolved_at >= DATE_SUB(NOW(), INTERVAL 30 DAY) AND resolved_at <= resolution_due_at",
+        array($login_id))[0]['cnt'];
+    
+    // Calculate compliance rate
+    $compliance_rate = $total_resolved_30d > 0 ? round(($on_time_30d / $total_resolved_30d) * 100) : 100;
+
+    // Format average resolution time for display
+    $avg_hours_display = $avg_resolution_time ? round($avg_resolution_time / 60, 1) . 'h' : '—';
+
+    // Count Manage Requests for Manager
+    $count_manage_requests_manager = retrieve("SELECT COUNT(*) AS cnt FROM change_requests WHERE status = 'Submitted' AND change_type = 'Normal'", array())[0]['cnt'];
+    
     
     $dashboardStats = retrieve(
         "SELECT 

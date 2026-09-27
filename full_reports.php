@@ -7,7 +7,7 @@
 <?php
 
 if (empty($_SESSION['login_id']) || !in_array($_SESSION['role'] ?? '', ['IT Supervisor', 'IT Manager'])) {
-    header('Location: login.php');
+    header('Location: index.php');
     exit;
 }
 
@@ -47,12 +47,12 @@ $sql = "SELECT
         $where";
 $kpi = retrieve($sql, $params)[0] ?? array();
 
-$total_tickets    = (int)($kpi['total_tickets'] ?? 0);
-$open_tickets     = (int)($kpi['open_tickets'] ?? 0);
+$total_tickets = (int)($kpi['total_tickets'] ?? 0);
+$open_tickets = (int)($kpi['open_tickets'] ?? 0);
 $resolved_tickets = (int)($kpi['resolved_tickets'] ?? 0);
-$sla_eligible     = (int)($kpi['sla_eligible'] ?? 0);
-$sla_met          = (int)($kpi['sla_met'] ?? 0);
-$sla_compliance   = $sla_eligible > 0 ? round(($sla_met / $sla_eligible) * 100, 1) : null;
+$sla_eligible = (int)($kpi['sla_eligible'] ?? 0);
+$sla_met = (int)($kpi['sla_met'] ?? 0);
+$sla_compliance = $sla_eligible > 0 ? round(($sla_met / $sla_eligible) * 100, 1) : null;
 $avg_res_minutes  = $kpi['avg_resolution_minutes'] !== null ? round($kpi['avg_resolution_minutes']) : null;
 
 function format_minutes($min) {
@@ -111,10 +111,17 @@ function format_minutes($min) {
 
     
     // ---- CSV Export ----
+    // Inside full_reports.php
     if (isset($_GET['export']) && $_GET['export'] === 'csv') {
-        header('Content-Type: text/csv');
+        // Clear any previous output buffers from navbar/HTML
+        if (ob_get_length()) ob_end_clean();
+
+        header('Content-Type: text/csv; charset=utf-8');
         header('Content-Disposition: attachment; filename="kaban_helpdesk_report_' . date('Ymd_His') . '.csv"');
+
         $out = fopen('php://output', 'w');
+        fputs($out, "\xEF\xBB\xBF"); // BOM for UTF-8 compatibility in Excel
+
         fputcsv($out, ['Kaban Helpdesk Report', "$date_from to $date_to"]);
         fputcsv($out, []);
         fputcsv($out, ['Total Tickets', $total_tickets]);
@@ -124,23 +131,35 @@ function format_minutes($min) {
         fputcsv($out, ['Avg Resolution Time', format_minutes($avg_res_minutes)]);
         fputcsv($out, []);
         fputcsv($out, ['Category', 'Code', 'Ticket Count']);
-        foreach ($by_category as $row) fputcsv($out, [$row['category_name'], $row['category_code'], $row['cnt']]);
-        fputcsv($out, []);
-        fputcsv($out, ['Agent', 'Tickets Handled', 'Resolved', 'Avg Resolution', 'SLA Breaches']);
-        foreach ($agent_perf as $row) {
-            fputcsv($out, [$row['agent_name'], $row['tickets_handled'], $row['resolved'], format_minutes(round($row['avg_minutes'] ?? 0)), $row['sla_breaches']]);
+        
+        foreach ($by_category as $row) {
+            fputcsv($out, [$row['category_name'], $row['category_code'], $row['cnt']]);
         }
+        
+        fputcsv($out, []);
+        fputcsv($out, ['IT Support', 'Tickets Handled', 'Resolved', 'Avg Resolution', 'SLA Breaches']);
+        
+        foreach ($agent_perf as $row) {
+            fputcsv($out, [
+                $row['agent_name'], 
+                $row['tickets_handled'], 
+                $row['resolved'], 
+                format_minutes(round($row['avg_minutes'] ?? 0)), 
+                $row['sla_breaches']
+            ]);
+        }
+        
         fclose($out);
-        exit;
+        exit; // Halt execution so no trailing HTML is sent
     }
 
     // JSON-encode chart data for JS
     $js_category_labels = json_encode(array_column($by_category, 'category_code')); // codes on axis; names available via $by_category
-    $js_category_data    = json_encode(array_map('intval', array_column($by_category, 'cnt')));
-    $js_status_labels    = json_encode(array_column($by_status, 'status'));
-    $js_status_data      = json_encode(array_map('intval', array_column($by_status, 'cnt')));
-    $js_volume_labels    = json_encode(array_column($monthly_volume, 'ym'));
-    $js_volume_data      = json_encode(array_map('intval', array_column($monthly_volume, 'cnt')));
+    $js_category_data = json_encode(array_map('intval', array_column($by_category, 'cnt')));
+    $js_status_labels = json_encode(array_column($by_status, 'status'));
+    $js_status_data = json_encode(array_map('intval', array_column($by_status, 'cnt')));
+    $js_volume_labels  = json_encode(array_column($monthly_volume, 'ym'));
+    $js_volume_data = json_encode(array_map('intval', array_column($monthly_volume, 'cnt')));
 
     $sla_trend_labels = [];
     $sla_trend_data   = [];
@@ -154,12 +173,12 @@ function format_minutes($min) {
 
 ?>
 
-<div class="container-fluid py-4 px-4">
+<div class="container-fluid py-4 px-4 mt-5">
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h3 class="mb-0"><i class="fa-solid fa-chart-line me-2"></i>&nbsp;Reports</h3>
-        <a class="btn btn-outline-primary btn-sm" href="?<?= http_build_query(array_merge($_GET, ['export' => 'csv'])) ?>">
+        <button type="button" class="btn btn-outline-primary btn-sm" id="exportCsvBtn">
             <i class="fa-solid fa-file-csv me-1"></i>Export CSV
-        </a>
+        </button>
     </div>
 
     <!-- Filters -->
@@ -196,7 +215,7 @@ function format_minutes($min) {
             <button type="submit" class="btn btn-primary btn-sm w-100"><i class="fa-solid fa-filter me-1"></i>Apply</button>
         </div>
         <div class="col-6 col-md-2">
-            <a href="reports.php" class="btn btn-outline-secondary btn-sm w-100">Reset</a>
+            <a href="reports.php" class="btn btn-secondary btn-sm w-100">Reset</a>
         </div>
     </form>
 
@@ -304,7 +323,7 @@ const categoryChart = new Chart(document.getElementById('categoryChart'), {
     type: 'bar',
     data: {
         labels: <?= $js_category_labels ?>,
-        datasets: [{ label: 'Tickets', data: <?= $js_category_data ?>, backgroundColor: '#4e73df', borderRadius: 4 }]
+        datasets: [{ label: 'Tickets', data: <?= $js_category_data ?>, backgroundColor: '#4A1F8F', borderRadius: 4 }]
     },
     options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { precision: 0 } } } }
 });
@@ -313,7 +332,7 @@ const statusChart = new Chart(document.getElementById('statusChart'), {
     type: 'doughnut',
     data: {
         labels: <?= $js_status_labels ?>,
-        datasets: [{ data: <?= $js_status_data ?>, backgroundColor: ['#4e73df','#f6c23e','#e74a3b','#36b9cc','#1cc88a','#858796'] }]
+        datasets: [{ data: <?= $js_status_data ?>, backgroundColor: ['#4e73df','#1cc88a','#f6c23e','#e74a3b','#36b9cc','#858796'] }]
     },
     options: { plugins: { legend: { position: 'bottom' } } }
 });

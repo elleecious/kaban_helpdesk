@@ -28,12 +28,14 @@
     if (!in_array($priority, $allowed_priorities)) {
         $response['status'] = 'error';
         $response['message'] = 'Invalid priority';
+        echo json_encode($response);
         exit;
     }
 
     if (!is_numeric($response_minutes) || !is_numeric($resolution_hours) || $response_minutes < 0 || $resolution_hours < 0) {      
         $response['status'] = 'error';
         $response['message'] = 'Hours must be valid positive numbers';
+        echo json_encode($response);
         exit;
     }
 
@@ -41,6 +43,7 @@
     if (!empty($existing)) {
         $response['status'] = 'error';
         $response['message'] = 'SLA rule for this category and priority already exists';
+        echo json_encode($response);
         exit;
     }
 

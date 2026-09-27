@@ -6,30 +6,69 @@
 
 <div class="shell">
     <!-- LEFT RAIL -->
-  <nav class="rail" aria-label="Categories">
+  <?php
+// Total article count (for "All articles")
+$totalCount = retrieve("SELECT COUNT(*) AS total FROM kb_articles", array());
+$totalArticles = $totalCount[0]['total'] ?? 0;
+
+// Categories with their article counts in one query (avoids N+1 queries)
+$getCat = retrieve(
+    "SELECT c.id, c.code, c.name, COUNT(a.id) AS article_count
+     FROM categories c
+     LEFT JOIN kb_articles a ON a.category_id = c.id
+     GROUP BY c.id, c.code, c.name
+     ORDER BY c.name ASC",
+    array()
+);
+
+// Popular articles in the Network category (top 5 by views)
+$popularNetwork = retrieve(
+    "SELECT a.id, a.title, a.slug
+     FROM kb_articles a
+     INNER JOIN categories c ON a.category_id = c.id
+     WHERE c.code = ?
+     ORDER BY a.views DESC
+     LIMIT 5",
+    array('NET')
+);
+?>
+
+<nav class="rail" aria-label="Categories">
     <p class="rail-heading">Categories</p>
     <ul class="cat-list" id="catList">
-    
 
-      <li class="cat-item active" data-cat="all"><span class="cat-tag">ALL</span> All articles <span class="cat-count">24</span></li>
-      <li class="cat-item" data-cat="NET"><span class="cat-tag">NET</span> Network <span class="cat-count">5</span></li>
-      <li class="cat-item" data-cat="POS"><span class="cat-tag">POS</span> Point of Sale <span class="cat-count">3</span></li>
-      <li class="cat-item" data-cat="PMS"><span class="cat-tag">PMS</span> Property Mgmt <span class="cat-count">4</span></li>
-      <li class="cat-item" data-cat="HW"><span class="cat-tag">HW</span> Hardware <span class="cat-count">3</span></li>
-      <li class="cat-item" data-cat="CCTV"><span class="cat-tag">CCTV</span> Surveillance <span class="cat-count">2</span></li>
-      <li class="cat-item" data-cat="MAIL"><span class="cat-tag">MAIL</span> Email <span class="cat-count">3</span></li>
-      <li class="cat-item" data-cat="SW"><span class="cat-tag">SW</span> Software <span class="cat-count">4</span></li>
+      <li class="cat-item active" data-cat="all">
+        <span class="cat-tag">ALL</span> All articles
+        <span class="cat-count"><?= htmlspecialchars($totalArticles) ?></span>
+      </li>
+
+      <?php foreach ($getCat as $cat): ?>
+        <li class="cat-item" data-cat="<?= htmlspecialchars($cat['code']) ?>">
+          <span class="cat-tag"><?= htmlspecialchars($cat['code']) ?></span>
+          <?= htmlspecialchars($cat['name']) ?>
+          <span class="cat-count"><?= htmlspecialchars($cat['article_count']) ?></span>
+        </li>
+      <?php endforeach; ?>
+
     </ul>
 
     <p class="rail-heading">Popular in Network</p>
     <ul class="article-list" id="articleList">
-      <li><a href="#" class="article-link current" data-article="wifi">Wi-Fi not connecting on staff devices</a></li>
-      <li><a href="#" class="article-link" data-article="vpn">Connecting to the office VPN remotely</a></li>
-      <li><a href="#" class="article-link" data-article="printer">Printer offline or not printing</a></li>
-      <li><a href="#" class="article-link" data-article="pos-freeze">POS terminal freezes at checkout</a></li>
-      <li><a href="#" class="article-link" data-article="pms-reset">Resetting your PMS password</a></li>
+      <?php if (empty($popularNetwork)): ?>
+        <li class="article-empty">No articles yet</li>
+      <?php else: ?>
+        <?php foreach ($popularNetwork as $i => $article): ?>
+          <li>
+            <a href="#"
+               class="article-link<?= $i === 0 ? ' current' : '' ?>"
+               data-article="<?= htmlspecialchars($article['slug']) ?>">
+              <?= htmlspecialchars($article['title']) ?>
+            </a>
+          </li>
+        <?php endforeach; ?>
+      <?php endif; ?>
     </ul>
-  </nav>
+</nav>
 
   <!-- ARTICLE -->
   <main class="article-col">
@@ -95,8 +134,8 @@
 
     <div class="feedback-row">
       <span>Was this article helpful?</span>
-      <button class="fb-btn" data-fb="yes">👍 Yes</button>
-      <button class="fb-btn" data-fb="no">👎 No</button>
+      <button class="fb-btn" data-fb="yes"><span class="fa fa-thumbs-up"></span>  Yes</button>
+      <button class="fb-btn" data-fb="no"><span class="fa fa-thumbs-down"></span> No</button>
       <span class="fb-note" id="fbNote"></span>
     </div>
   </main>

@@ -1,6 +1,5 @@
 <?php include('includes/header.php') ?>
 <?php $page_title="KabanDesk"; ?>
-
 <div class="bg-image">
     <div class="mask"></div>
     <div class="container py-5">

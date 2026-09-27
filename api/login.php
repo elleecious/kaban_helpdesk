@@ -14,6 +14,7 @@ $password = $_POST['password'] ?? '';
 
 if ($email === '' || $password === '') {
     $response['message'] = 'Email and password are required.';
+    echo json_encode($response);
     exit;
 }
 
@@ -22,6 +23,13 @@ $user = retrieve("SELECT * FROM users WHERE email = ?", array($email));
 
 if ($user) {
     $user = $user[0];
+
+    if ($user['status'] != 1) {
+        $response['message'] = 'Your account is deactivated. Please contact the administrator.';
+        echo json_encode($response);
+        exit;
+    }
+
     if (password_verify($password,$user['password_hash'])) {
         session_regenerate_id(true);
         $_SESSION['login_id'] = $user['id'];

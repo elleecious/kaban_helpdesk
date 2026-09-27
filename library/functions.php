@@ -1,7 +1,51 @@
 <?php
 
+    $config_shorcuts = [
+        [
+            'title' => 'All Tickets',
+            'icon'  => 'fa-tags',
+            'id'    => 'all_tickets',
+        ],
+        [
+            'title' => 'Manage Users',
+            'icon'  => 'fa-users',
+            'id'    => 'manage_users',
+        ],
+        [
+            'title' => 'Manage Category SLA',
+            'icon'  => 'fa-tags',
+            'id'    => 'manage_cat_sla',
+        ],
+        [
+            'title' => 'Full Reports',
+            'icon'  => 'fa-line-chart',
+            'id'    => 'full_reports',
+        ],
+        [
+            'title' => 'Knowledge Base',
+            'icon'  => 'fa-book-open',
+            'id'    => 'knowledge_base',
+        ],
+        [
+            'title' => 'Change Request',
+            'icon'  => 'fa-refresh',
+            'id'    => 'change_request',
+        ],
+        [
+            'title' => 'User Control',
+            'icon'  => 'fa-user-cog',
+            'id'    => 'user_control',
+        ],
+        [
+            'title' => 'Logs',
+            'icon'  => 'fa-history',
+            'id'    => 'logs',
+        ],
+    ];
+
+    // Generates a unique ticket number based on the category code and a random alphanumeric string.
     function generateTicketNumber($pdo, $category_code) {
-        $chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // no 0/O, 1/I to avoid confusion
+        $chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
         do{
             $random = '';
             for ($i = 0; $i < 7; $i++) {
@@ -15,6 +59,7 @@
         return $candidate;
     }
 
+    // Generates a unique CRF number based on the year and a random alphanumeric string.
     function generateCrfNumber($year) {
         do {
             $randomPart = strtoupper(substr(str_shuffle('ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'), 0, 7));
@@ -26,6 +71,7 @@
         return $crfNumber;
     }
 
+    // Returns an array of required approval levels based on the change type.
     function getRequiredApprovals($changeType) {
         switch ($changeType) {
             case 'Standard':
@@ -33,12 +79,35 @@
             case 'Normal':
                 return ['IT Manager'];
             case 'Major':
-                return ['IT Manager', 'GM/Management'];   // both required, in sequence
+                return ['IT Manager', 'General Manager'];   // both required, in sequence
             case 'Emergency':
                 return ['IT Manager', 'IT Supervisor', 'IT Support Specialist'];   // OR Authorized Personnel — handled as an "either" case below
             default:
                 return [];
         }
+    }
+    
+    // Determines if a given change request has been fully approved based on its type and recorded approvals.
+    function isChangeRequestApproved($changeRequestId, $changeType) {
+        $approvals = retrieve(
+            "SELECT approval_level, decision FROM change_approvals WHERE change_request_id = ?",
+            array($changeRequestId)
+        );
+
+        $requiredApprovals = getRequiredApprovals($changeType);
+        $approvedLevels = array_column(array_filter($approvals, fn($a) => $a['decision'] === 'Approved'), 'approval_level');
+
+        if ($changeType === 'Emergency') {
+            // For Emergency, either IT Manager OR BOTH IT Support and IT Supervisor must approve
+            $itManagerApproved = in_array('IT Manager', $approvedLevels);
+            $supportApproved = in_array('IT Support Specialist', $approvedLevels);
+            $supervisorApproved = in_array('IT Supervisor', $approvedLevels);
+
+            return $itManagerApproved || ($supportApproved && $supervisorApproved);
+        }
+
+        // For other types, all required approvals must be present
+        return empty(array_diff($requiredApprovals, $approvedLevels));
     }
 
     function getMajorChangeStatus($changeRequestId) {
@@ -55,7 +124,7 @@
 
         $approvedLevels = array_column(array_filter($approvals, fn($a) => $a['decision'] === 'Approved'), 'approval_level');
 
-        if (in_array('IT Manager', $approvedLevels) && in_array('GM/Management', $approvedLevels)) {
+        if (in_array('IT Manager', $approvedLevels) && in_array('General Manager', $approvedLevels)) {
             return 'Approved'; // both required gates cleared
         }
 
@@ -81,6 +150,103 @@
         }
 
         return false;
+    }
+
+
+    // Maps a change type + current approval state to the approval_level this action represents.
+// Returns null if the given role isn't authorized to act at this stage.
+    function getApprovalLevelForAction($changeType, $role, $changeRequestId) {
+
+        if ($changeType === 'Standard') {
+            return $role === 'IT Supervisor' ? 'IT Supervisor' : null;
+        }
+
+        if ($changeType === 'Normal') {
+            return $role === 'IT Manager' ? 'IT Manager' : null;
+        }
+
+        if ($changeType === 'Major') {
+            // Sequential: IT Manager must approve before GM can act at all
+            $itManagerDecision = retrieve(
+                "SELECT decision FROM change_approvals WHERE change_request_id = ? AND approval_level = 'IT Manager'",
+                array($changeRequestId)
+            );
+
+            if ($role === 'IT Manager') {
+                // Only allowed if no IT Manager decision exists yet
+                return empty($itManagerDecision) ? 'IT Manager' : null;
+            }
+
+            if ($role === 'General Manager' || $role === 'Management') {
+                // Only allowed once IT Manager has approved
+                $approved = !empty($itManagerDecision) && $itManagerDecision[0]['decision'] === 'Approved';
+                return $approved ? 'General Manager' : null;
+            }
+
+            return null;
+        }
+
+        if ($changeType === 'Emergency') {
+            if ($role === 'IT Manager') return 'IT Manager';
+            if ($role === 'IT Support Specialist') return 'IT Support';
+            if ($role === 'IT Supervisor') return 'IT Supervisor';
+            return null;
+        }
+
+        return null;
+    }
+
+    // Recalculates overall change_requests.status from the change_approvals rows recorded so far.
+    function recalculateChangeStatus($changeRequestId, $changeType) {
+
+        $approvals = retrieve(
+            "SELECT approval_level, decision FROM change_approvals WHERE change_request_id = ?",
+            array($changeRequestId)
+        );
+
+        $decisionByLevel = [];
+        foreach ($approvals as $a) {
+            $decisionByLevel[$a['approval_level']] = $a['decision'];
+        }
+
+        if ($changeType === 'Standard' || $changeType === 'Normal') {
+            $level = $changeType === 'Standard' ? 'IT Supervisor' : 'IT Manager';
+            if (($decisionByLevel[$level] ?? null) === 'Approved') return 'Approved';
+            if (($decisionByLevel[$level] ?? null) === 'Rejected') return 'Rejected';
+            return 'Under Review';
+        }
+
+        if ($changeType === 'Major') {
+            if (($decisionByLevel['IT Manager'] ?? null) === 'Rejected') return 'Rejected';
+            if (($decisionByLevel['General Manager'] ?? null) === 'Rejected') return 'Rejected';
+            if (($decisionByLevel['IT Manager'] ?? null) === 'Approved'
+                && ($decisionByLevel['General Manager'] ?? null) === 'Approved') {
+                return 'Approved';
+            }
+            return 'Under Review';
+        }
+
+        if ($changeType === 'Emergency') {
+            // Path A: IT Manager alone
+            if (($decisionByLevel['IT Manager'] ?? null) === 'Approved') return 'Approved';
+
+            // Path B: BOTH IT Support and IT Supervisor
+            if (($decisionByLevel['IT Support Specialist'] ?? null) === 'Approved'
+                && ($decisionByLevel['IT Supervisor'] ?? null) === 'Approved') {
+                return 'Approved';
+            }
+
+            // Reject only once every path that was actually attempted has failed
+            $itManagerRejected = ($decisionByLevel['IT Manager'] ?? null) === 'Rejected';
+            $supportRejected = ($decisionByLevel['IT Support Specialist'] ?? null) === 'Rejected';
+            $supervisorRejected = ($decisionByLevel['IT Supervisor'] ?? null) === 'Rejected';
+
+            if ($itManagerRejected && ($supportRejected || $supervisorRejected)) return 'Rejected';
+
+            return 'Under Review';
+        }
+
+        return 'Under Review';
     }
 
     function get_priority_code($priority) {
@@ -145,5 +311,11 @@
         } else {
             return "Unable to determine local IP Address";
         }
+    }
+
+    // Retrieves the computer name of the client machine based on the IP address.
+    function getComputerName($ip) {
+        $hostname = gethostbyaddr($ip);
+        return $hostname ?: "Unknown";
     }
 ?>

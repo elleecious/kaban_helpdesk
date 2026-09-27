@@ -8,7 +8,7 @@
 
 <div class="mt-5">
     <div class="row mx-auto">
-        <div class="col-md-12 mb-2">
+        <div class="col-md-12 mb-2 mt-5">
             <div class="row">
                 <div class="col-md-6">
                     <div class="card rounded-0">
@@ -79,11 +79,19 @@
                                             sla_rules AS sla 
                                             INNER JOIN categories AS cat ON sla.category_id=cat.id",array());
                                         foreach ($get_sla as $sla_value) {
+
+                                            $colors = [
+                                                'Critical' => 'bg-danger text-white',
+                                                'High' => 'bg-warning text-dark',
+                                                'Medium' => 'bg-success text-white',
+                                                'Low' => 'bg-info text-white'
+                                            ];
+
                                             echo "
                                                 <tr>
                                                     <td>".$sla_value['sla_id']."</td>
                                                     <td>".$sla_value['cat_name']."</td>
-                                                    <td>".get_priority_code($sla_value['priority'])." - ".$sla_value['priority']."</td>
+                                                    <td class='".$colors[$sla_value['priority']]."'>".get_priority_code($sla_value['priority'])." - ".$sla_value['priority']."</td>
                                                     <td>".$sla_value['response_minutes']."</td>
                                                     <td>".$sla_value['resolution_hours']."</td>
                                                     <td>
@@ -122,7 +130,7 @@ $(document).ready(function () {
 		"lengthChange": true,
 		"paging": true,
 		"searching": true,
-        "pageLength":20,
+        "pageLength":10,
 		"order": [],
 	});
 
@@ -132,7 +140,7 @@ $(document).ready(function () {
 		"lengthChange": true,
 		"paging": true,
 		"searching": true,
-        "pageLength":20,
+        "pageLength":10,
 		"order": [],
 	});
 
