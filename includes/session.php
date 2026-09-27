@@ -1,5 +1,7 @@
 <?php
     session_start();
+    
+    error_log("SID=" . session_id() . " login_id=" . ($_SESSION['login_id'] ?? 'NOT SET'));
 
     if (isset($_SESSION['login_id'])) {
         $login_id = $_SESSION['login_id'];
@@ -23,6 +25,7 @@
 
     if (!isset($_SESSION['login_id'])) {
         header("location: index.php");
+        exit;
     }
     
 ?>

@@ -12,6 +12,9 @@
     --line-soft:#E9ECE7;
     --danger:#B34434;
     --radius:3px;
+
+    --brand-purple: #4A1F8F;
+    --brand-purple-tint: #bca0e9;
   }
   *{box-sizing:border-box;}
   html,body{margin:0;padding:0;}
@@ -117,7 +120,7 @@
     cursor:pointer;font-size:13.5px;color:var(--ink);
   }
   .cat-item:hover{background:var(--line-soft);}
-  .cat-item.active{background:var(--accent-tint);color:var(--accent-dark);font-weight:600;}
+  .cat-item.active{background:var(--brand-purple-tint);color:var(--brand-purple);font-weight:600;}
   .cat-tag{
     font-family:'IBM Plex Mono',monospace;
     font-size:10px;font-weight:500;
@@ -127,7 +130,7 @@
     padding:2px 5px;border-radius:2px;
     flex:none;min-width:38px;text-align:center;
   }
-  .cat-item.active .cat-tag{border-color:var(--accent);color:var(--accent-dark);background:#fff;}
+  .cat-item.active .cat-tag{border-color:var(--brand-purple-tint);color:var(--brand-purple);background:#fff;}
   .cat-count{margin-left:auto;color:var(--ink-soft);font-size:12px;}
 
   .article-list{list-style:none;margin:0;padding:0;border-top:1px solid var(--line);padding-top:16px;}

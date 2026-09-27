@@ -21,6 +21,8 @@
     $attachment = $_FILES['attachment']['name'];
     $attachment_location = "/uploads/tickets/".$attachment;
 
+    $originalFileName = basename($_FILES['attachment']['name']);
+
     $sla_rules = retrieve("SELECT cat.name AS category_name, sla.response_minutes, sla.resolution_hours 
         FROM sla_rules AS sla INNER JOIN categories AS cat ON sla.category_id=cat.id
         WHERE sla.category_id = ? AND sla.priority = ?",array($category, $priority));
@@ -46,7 +48,7 @@
     $response_due_at   = null;
     $resolution_due_at = null;
 
-    $get_category = retrieve("SELECT * FROM categories",array());
+    $get_category = retrieve("SELECT code FROM categories WHERE id=?",array($category));
     $category_code = $get_category[0]['code'];
 
     $response_due_at   = date("Y-m-d H:i:s", strtotime('+60 minutes'));  // fallback: Low priority
@@ -70,6 +72,8 @@
             VALUES(?,?,?,?,?,?,?,?,?,?,?)",array($ticket_number,$subject,$description,$priority,'Open',date("Y-m-d H:i:s"),
             $response_due_at,$resolution_due_at,$login_id,null,$category));
 
+        $ticketId = $pdo->lastInsertId();
+
         manage("INSERT INTO logs (username, computer_name,ip_address,page,action,details,date)
             VALUES (?,?,?,?,?,?,?)",
         array($getEmployee[0]['username'],gethostbyaddr($_SERVER['REMOTE_ADDR']),getLocalIP(),"Create Ticket","CREATE",         
@@ -84,22 +88,10 @@
                     Date Created: <span class='font-weight-bold'>".date("Y-m-d H:i:s")."</span><br>
                 </p>
             </details>", date('Y-m-d H:i:s')));
-
-
-    $ticketId = $pdo->lastInsertId();
-    if (!$ticketId) {
-        $response['status'] = 'error';
-        $response['message'] = 'Failed to create a ticket';
-        exit;
-    }
-
     
-    $ticketId = $pdo->lastInsertId();
-
     if (!$ticketId) {
         $response['status'] = 'error';
         $response['message'] = 'Failed to create a ticket';
-        echo json_encode($response);
         exit;
     }
 
@@ -156,9 +148,8 @@
         // 4. Move temporary file to final path
         if (move_uploaded_file($fileTmpPath, $uploadPath)) {
 
-            manage(
-                "INSERT INTO attachments (ticket_id, file_url, uploaded_at) VALUES (?,?,?)",
-                array($ticketId, '../uploads/tickets/' . $newFileName, date('Y-m-d H:i:s'))
+            manage("INSERT INTO attachments (ticket_id, file_name, file_url, uploaded_at) VALUES (?,?,?,?)",
+                    array($ticketId, $originalFileName, '/uploads/tickets/' . $newFileName, date('Y-m-d H:i:s'))
             );
 
             manage(

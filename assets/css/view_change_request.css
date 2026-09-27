@@ -129,6 +129,28 @@
   }
   .btn-outline-kaban:hover{ background:#f4edf7; }
 
+.form-title-bar{
+  display:grid;
+  grid-template-columns:1fr auto 1fr;
+  align-items:center;
+  padding:16px 32px;
+  border-bottom:1px solid var(--line);
+}
+.title-bar-logo{
+  height:26px;
+  width:auto;
+  justify-self:start;
+}
+.title-bar-label{
+  font-family:'Poppins',sans-serif;
+  font-weight:600;
+  font-size:1.25rem;
+  letter-spacing:.04em;
+  text-transform:uppercase;
+  color:#d85a30;
+  text-align:center;
+}
+
   @media(max-width:700px){
     .field-grid{ grid-template-columns:1fr; }
     .field:nth-child(odd){ border-right:none; }

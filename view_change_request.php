@@ -55,6 +55,18 @@ $statusClass = $statusClasses[$status] ?? 'st-pending';
 <link rel="stylesheet" href="./assets/css/mdb-ui-kit-mdb.min.css">
 <link rel="stylesheet" href="./assets/css/view_change_request.css">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700&family=Roboto:wght@400;500&display=swap">
+<style>
+@media print {
+    @page {
+        size: auto;   /* auto is the initial value */
+        margin: 0;  /* this affects the margin in the printer settings */
+    }
+    .topbar, .sheet-footer, .back-link { display: none; }
+
+    /* Adjust the sheet to take full width for printing */
+    .sheet { width: 100%; margin: 0; }
+}
+</style>
 </head>
 <body>
 
@@ -75,7 +87,12 @@ $statusClass = $statusClasses[$status] ?? 'st-pending';
 </div>
 
 <div class="sheet">
-
+  
+  <div class="form-title-bar">
+    <img src="./assets/img/kaban-logo-horizontal.png" alt="Kaban Hotel and Casino Boracay" class="title-bar-logo">
+    <div class="title-bar-label">Change Request Form</div>
+    <div></div>
+  </div>
   <div class="sheet-head">
     <div>
       <h1><?= h($cr['change_title']) ?></h1>
@@ -168,7 +185,7 @@ $statusClass = $statusClasses[$status] ?? 'st-pending';
       <div class="approval-item">
         <div class="approval-dot <?= $dClass ?>"><?= $dSymbol ?></div>
         <div>
-          <div class="approval-role"><?= h($a['approval_level']) ?> — <?= h($a['decision'] ?: 'Pending') ?></div>
+          <div class="approval-role"> <?= h($a['decision'] ?: 'Pending') ?> by the <?= h($a['approval_level']) ?></div>
           <div class="approval-sub">
             <?= $a['approver_name'] ? h($a['approver_name']) : 'Awaiting assignment' ?>
             <?php if ($a['decided_at']): ?> · <?= fmt_datetime($a['decided_at']) ?><?php endif; ?>

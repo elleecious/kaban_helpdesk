@@ -5,7 +5,32 @@
 <?php include("includes/modal.php") ;?>
 <?php include("library/stats.php"); ?>
 <?php $page_title = "KabanDesk"; ?>
-<div class="container">
+<?php
+
+// ---- Chart: Tickets by Category (30 Days) ----
+$sql = "SELECT c.name AS category_name, c.code AS category_code, COUNT(*) AS cnt
+        FROM tickets t
+        JOIN categories c ON c.id = t.category_id
+        WHERE t.created_at >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)
+        GROUP BY c.id, c.name, c.code
+        ORDER BY cnt DESC";
+$by_category = retrieve($sql, []);
+
+$category_palette = [
+    '#4e73df', '#1cc88a', '#f6c23e', '#e74a3b', '#36b9cc',
+    '#fd7e14', '#6f42c1', '#20c997', '#e83e8c', '#858796',
+    '#17a2b8', '#d63384', '#198754', '#7a07e6',
+];
+
+$js_category_labels = json_encode(array_column($by_category, 'category_code'));
+$js_category_data    = json_encode(array_map('intval', array_column($by_category, 'cnt')));
+$js_category_colors  = json_encode(array_map(
+    fn($i) => $category_palette[$i % count($category_palette)],
+    array_keys($by_category)
+));
+
+?>
+<div class="container mt-5">
     <div class="row mx-auto">
         <div class="col-md-12">
             <div class="row mt-5">
@@ -50,11 +75,10 @@
                 </div>
                 <div class="mt-3" id="attentionAlertContainer"></div>
                  <hr>
-                <div class="note border border-secondary col-md-3 mb-4">
+                <div class="note border border-secondary col-md-3 mb-2">
                     <strong>Configuration Shortuts</strong>
                 </div>
                 <div class="row">
-
                     <div class="col-md-3 mt-2 hvr-pulse">
                         <div class="mt-3 secondary-color" id="all_tickets" style="cursor: pointer;">
                             <div class="p-4 text-white text-center">
@@ -88,7 +112,7 @@
                         <div class="card">
                             <div class="card-header p-3 white-text kaban-color">Unassigned Tickets</div>
                             <div class="card-body">
-                                <table class="table table-bordered">
+                                <table class="table table-bordered table-sm text-center" width="100%" cellspacing="0" cellpadding="0">
                                     <thead>
                                         <?php
                                             $thead=explode(",","Ticket #, Subject, Priority, Waiting, Action");
@@ -97,35 +121,10 @@
                                             }
                                         ?>
                                     </thead>
-                                    <tbody>
-                                        <?php
-                                            $getUnAssignedTickets=retrieve("SELECT id, ticket_number, subject, priority, 
-                                                    TIMESTAMPDIFF(MINUTE, created_at, NOW()) AS waiting_minutes
-                                            FROM tickets WHERE assigned_to IS NULL AND status = 'Open'
-                                            ORDER BY FIELD(priority, 'Critical','High','Medium','Low'),
-                                                created_at ASC",array());
-                                            for ($i=0; $i < count($getUnAssignedTickets); $i++) { 
-                                                echo "<tr>
-                                                    <td>".$getUnAssignedTickets[$i]['ticket_number']."</td>
-                                                    <td>".$getUnAssignedTickets[$i]['subject']."</td>
-                                                    <td class='font-weight-bold ".(match($getUnAssignedTickets[$i]['priority']) {
-                                                        'Low'=> 'text-low','Medium'=> 'text-medium',
-                                                        'High'=> 'text-high','Critical'=> 'text-critical',
-                                                    })."'>".$getUnAssignedTickets[$i]['priority']."</td>
-                                                    <td>".format_waiting_time($getUnAssignedTickets[$i]['waiting_minutes'])."</td>
-                                                    <td>
-                                                        <a class='btn btn-primary btn-sm assign_ticket'
-                                                            data-id='".$getUnAssignedTickets[$i]['id']."'
-                                                            data-ticket-number='".$getUnAssignedTickets[$i]['ticket_number']."'
-                                                            data-subject='".$getUnAssignedTickets[$i]['subject']."'
-                                                            data-toggle='modal' 
-                                                            data-target='#assignTicketModal'>
-                                                            Assign
-                                                        </a>
-                                                    </td>
-                                                </tr>";
-                                            }
-                                        ?>
+                                    <tbody id="unassignedTicketsBody">
+                                       <tr>
+                                            <td colspan="5" class="text-center">Loading unassigned tickets...</td>
+                                        </tr>
                                     </tbody>
                                 </table>
                             </div>
@@ -138,7 +137,7 @@
                         <div class="card">
                             <div class="card-header p-3 white-text kaban-color">IT Support Overload</div>
                             <div class="card-body">
-                                <table class="table table-bordered">
+                                <table class="table table-bordered table-sm text-center" width="100%" cellspacing="0" cellpadding="0">
                                     <thead>
                                         <?php
                                             $thead=explode(",","IT Officer, Open, Overdue");
@@ -192,21 +191,22 @@
                                     </thead>
                                     <tbody>
                                         <?php
-                                            $escalations = retrieve("SELECT t.id, t.ticket_number, t.subject, u.name AS escalated_by, t.status
+                                            $escalations = retrieve(
+                                                "SELECT t.id, t.ticket_number, t.subject, u.name AS escalated_by_name, t.escalation_reason, t.status
                                                 FROM tickets t
-                                                JOIN users u ON t.assigned_to = u.id
+                                                INNER JOIN users u ON t.escalated_by = u.id
                                                 WHERE t.status = 'Escalated'
                                                 ORDER BY t.updated_at DESC",
                                                 array());
-                                            if (count($getUnAssignedTickets) > 0) {
+                                            if (count($escalations) > 0) {
                                                 foreach ($escalations as $esc) {
-                                                    echo "<tr>
+                                                    echo "<tr style='cursor:pointer;' onclick=\"window.location='ticket_detail.php?id=".$esc['id']."'\">
                                                         <td>".$esc['ticket_number']."</td>
                                                         <td>".$esc['subject']."</td>
-                                                        <td>".$esc['escalated_by']."</td>
-                                                        <td class='badge badge-purple'>".$esc['status']."</td>
+                                                        <td>".$esc['escalated_by_name']."</td>
+                                                        <td class='text-secondary'>".$esc['status']."</td>
                                                     </tr>";
-                                                } 
+                                                }
                                             } else {
                                                 echo "<tr>
                                                         <td colspan='4' class='text-center'>
@@ -231,7 +231,7 @@
                             <div class="card-header p-3 white-text kaban-color">Tickets by Category</div>
                             <div class="card-body">
                                 <div id="chart-container" style="width: 1000px; height: 500px;">
-                                    <canvas id="myChart"></canvas>
+                                    <canvas id="categoryChart"></canvas>
                                 </div>
                             </div>
                         </div>
@@ -244,6 +244,20 @@
 <?php include("includes/footer.php"); ?>
 <script>
 $(document).ready(function(){
+
+    const categoryChart = new Chart(document.getElementById('categoryChart'), {
+        type: 'bar',
+        data: {
+            labels: <?= $js_category_labels ?>,
+            datasets: [{
+                label: 'Tickets',
+                data: <?= $js_category_data ?>,
+                backgroundColor: <?= $js_category_colors ?>,
+                borderRadius: 4
+            }]
+        },
+        options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { precision: 0 } } } }
+    });
 
     $("#knowledge_base").click(function(e){
         window.location="manage_kb_articles.php";

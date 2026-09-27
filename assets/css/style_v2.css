@@ -154,3 +154,56 @@ body {
   color: #DC143C;
 }
 
+/* Styling adjustments specifically for MDB Dropdown Menu */
+.notification-dropdown-menu {
+    width: 500px;
+    border-radius: 1.25rem !important; /* Rounded design */
+    padding: 0;
+    border: none;
+}
+
+/* Avatar & Badge Positioning */
+.avatar-badge-wrapper {
+    position: relative;
+    width: 42px;
+    height: 42px;
+}
+
+.sub-badge {
+    position: absolute;
+    bottom: -2px;
+    right: -2px;
+    width: 18px;
+    height: 18px;
+    font-size: 8px;
+    border: 2px solid #fff;
+}
+
+/* Clean Multi-line Truncation */
+.notification-desc {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.notification-item {
+    transition: background-color 0.2s ease;
+    position: relative;
+}
+
+.unread-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    position: absolute;
+    top: 18px;
+    right: 18px;
+}
+
+/* MDB Active Pill Tabs Customization */
+.nav-pills-sm .nav-link {
+    padding: 3px 12px;
+    font-size: 0.8rem;
+    border-radius: 8px;
+}

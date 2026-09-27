@@ -1,0 +1,60 @@
+.notification-dropdown-menu {
+  width: 380px;
+  max-width: 90vw;
+  border-radius: 1.25rem !important;
+  padding: 0 !important;
+  border: none !important;
+}
+
+/* Sub-badge positioning on user avatar */
+.avatar-badge-wrapper {
+  position: relative;
+  width: 42px;
+  height: 42px;
+}
+
+.sub-badge {
+  position: absolute;
+  bottom: -2px;
+  right: -2px;
+  width: 18px;
+  height: 18px;
+  font-size: 8px;
+  border: 2px solid #fff;
+}
+
+/* Multi-line text ellipsis */
+.notification-desc {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.notification-item {
+  position: relative;
+  white-space: normal !important;
+  transition: background-color 0.2s ease;
+}
+
+.unread-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  position: absolute;
+  top: 18px;
+  right: 18px;
+}
+
+/* Custom smaller sizing for MDB 4 pills tab header */
+.nav-pills.md-pills-sm .nav-link {
+  padding: 3px 10px;
+  font-size: 0.8rem;
+  border-radius: 6px;
+}
+
+.nav-pills.md-pills-sm .nav-link.active {
+  background-color: #ffffff !important;
+  color: #111827 !important;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+}

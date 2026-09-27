@@ -6,7 +6,7 @@
 <div class="container mt-5">
     <div class="row mx-auto">
         <div class="col-md-12">
-            <div class="row">
+            <div class="row mt-5">
                 <h3 class="text-center">All of your Tickets</h3>
             </div>
             <hr>
@@ -21,11 +21,11 @@
 
                             for ($i=0; $i < count($getAllTickets); $i++) { 
                                 echo "
-                                    <div class='col-md-12'>
+                                    <div class='col-md-4 mb-3'>
                                         <div class='card'>
                                             <div class='card-body'>
-                                                <h5 class='card-title'>".$getAllTickets[$i]['subject']."</h5>
-                                                <p>".$getAllTickets[$i]['description']."</p>
+                                                <h5 class='card-title'>".$getAllTickets[$i]['ticket_number']."</h5>
+                                                <p>".$getAllTickets[$i]['subject']."</p>
                                                 <a class='text-primary' href='ticket_detail.php?id=".$getAllTickets[$i]['ticked_id']."'>View Ticket</a>
                                             </div>
                                         </div>

@@ -5,7 +5,7 @@
 <?php $page_title = "KabanDesk"; ?>
 <div class="mt-5">
     <div class="row mx-auto">
-        <div class="col-md-12">
+        <div class="col-md-12 mt-5">
             <div class="row mt-3">
                 <div class="col-md-5">
                     <div class="card rounded-0">
@@ -76,7 +76,12 @@
                                                 <td>".$get_kba[$i]['name']."</td>
                                                 <td>".$get_kba[$i]['kba_created']."</td>
                                                 <td>
-                                                    <span class='btn btn-primary btn-sm edit_kba'>Edit</span>
+                                                    <a class='ml-1' href='view_kb_articles.php'>
+                                                        <span class='fa fa-eye fa-xl'></span>
+                                                    </a>
+                                                    <span class='ml-1 edit_kba'>
+                                                        <i class='fa fa-edit fa-xl'></i>
+                                                    </span>
                                                 </td>
                                             </tr>";
                                         }

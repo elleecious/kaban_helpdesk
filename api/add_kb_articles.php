@@ -14,6 +14,8 @@ $kba_category = trim($_POST['kba_category'] ?? '');
 if (empty($kb_category)) {
     $response['status'] = 'warning';
     $response['message'] = 'Please select a category';
+    echo json_encode($response);
+    exit;
 }
 
 $get_username = retrieve("SELECT * FROM users WHERE id=?",array($login_id));

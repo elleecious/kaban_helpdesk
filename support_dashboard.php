@@ -2,9 +2,10 @@
 <?php include("includes/session.php"); ?>
 <?php include("includes/navbar.php"); ?>
 <?php include("library/functions.php"); ?>
+<?php include("library/stats.php"); ?>
 <?php include("includes/modal.php") ;?>
 <?php $page_title = "KabanDesk"; ?>
-<div class="container">
+<div class="container mt-5">
     <div class="row mx-auto">
         <div class="col-md-12">
             <div class="row mt-5">
@@ -17,7 +18,7 @@
                     <div class="col-md-3">
                         <div class="mt-3 kaban-color">
                             <div class="p-3 text-white text-center">
-                                <span class="large-text">12</span>
+                                <span class="large-text"><?= $count_tickets_assigned_to_me; ?></span>
                                 <br><span>Assigned to Me</span>
                             </div>
                         </div>
@@ -25,7 +26,7 @@
                     <div class="col-md-3">    
                         <div class="mt-3" style="background-color: #F77F00;">
                             <div class="p-3 text-white text-center">
-                                <span class="large-text">0</span>
+                                <span class="large-text"><?= $count_it_in_progress; ?></span>
                                 <br><span>In Progress</span>
                             </div>
                         </div>
@@ -33,7 +34,7 @@
                     <div class="col-md-3">
                         <div class="mt-3" style="background-color: #D62828;">
                             <div class='p-3 text-white text-center'>
-                                <span class="large-text font-weight-bold">12</span>
+                                <span class="large-text font-weight-bold"><?= $count_it_overdue; ?></span>
                                 <br><span class="font-weight-bold">Overdue (SLA)</span>
                             </div>
                         </div>
@@ -41,7 +42,7 @@
                     <div class="col-md-3">    
                         <div class="mt-3" style="background-color: #07DD05;">
                             <div class='p-3 text-white text-center'>
-                                <span class="large-text">0</span>
+                                <span class="large-text"><?= $count_it_resolve_tickets; ?></span>
                                 <br><span>Resolved Today</span>
                             </div>
                         </div>
@@ -52,10 +53,10 @@
                     <div class="note note-info col-md-9 mb-0">
                         <strong>My Ticket Queue</strong>
                     </div>
-                    <a class="text-primary" data-toggle="modal" data-target="#unassignedTicketsModal"><span class='fa fa-plus'></span> Pick up next assigned ticket</a>
+                    <a class="text-primary" data-toggle="modal" data-target="#unassignedTicketsModal"><span class='fa fa-plus'></span> Pick up next assigned ticket <span class="badge badge-danger"><?= $count_open_tickets ?? '0'; ?></span> </a>
                 </div>
                 
-                <table class="table">
+                <table class="table table-bordered">
                     <thead>
                         <tr>
                             <?php
@@ -66,47 +67,12 @@
                             ?>
                         </tr>
                     </thead>
-                    <tbody>
-                        <?php
-                            $getTicketQueue = retrieve("SELECT t.id AS ticket_id, t.ticket_number, t.subject, t.priority, t.status, 
-                            t.resolution_due_at,
-                            TIMESTAMPDIFF(MINUTE, NOW(), t.resolution_due_at) AS minutes_left,
-                            u.name AS requester_name
-                            FROM tickets t
-                            JOIN users u ON t.created_by = u.id
-                            WHERE t.assigned_to = ? 
-                            AND t.status NOT IN ('Resolved', 'Closed')
-                            ORDER BY 
-                                FIELD(t.priority, 'Critical','High','Medium','Low'),
-                                t.resolution_due_at ASC",array($login_id));
-
-                            for ($i=0; $i < count($getTicketQueue); $i++) { 
-
-                                $minutesLeft = $getTicketQueue[$i]['minutes_left'];
-                                if ($minutesLeft < 0) $slaDisplay = '<h5><span class="badge rounded-pill badge-danger">Overdue</span></h5>';
-                                else $slaDisplay = format_waiting_time($minutesLeft) . ' left';
-
-                                $status = $getTicketQueue[$i]['status'];
-                                $statusBadge = match($status) {
-                                    'In Progress' => 'badge-warning', 
-                                    'Pending' => 'badge-info',
-                                    'Resolved' => 'badge-success',
-                                    'Closed' => 'badge-secondary',
-                                    default      => 'badge-secondary'
-                                };
-
-                                echo "<tr>
-                                    <td># ".$getTicketQueue[$i]['ticket_number']."</td>
-                                    <td> ".$getTicketQueue[$i]['subject']."</td>
-                                    <td> ".$getTicketQueue[$i]['priority']."</td>
-                                    <td> ".$slaDisplay."</td>
-                                    <td><h5><span class='badge ".$statusBadge."'>".$status."</span></h5></td>
-                                    <td> ".$getTicketQueue[$i]['requester_name']."</td>
-                                    <td><a href='ticket_detail.php?id=".$getTicketQueue[$i]['ticket_id']."'>View</a></td>
-                                </tr>";
-                            }
-                        ?>
+                    <tbody id="ticketQueueBody">
+                        <tr>
+                            <td colspan="7" class="text-center">Loading tickets...</td>
+                        </tr>
                     </tbody>
+                        
                 </table>
 
                 <div class="d-flex justify-content-between align-items-center mb-3 mt-3">

@@ -3,9 +3,9 @@
 <?php include('includes/navbar.php'); ?>
 <?php $page_title = "KabanDesk"; ?>
 <section>
-    <div class="container py-5">
+    <div class="container mt-5">
         <div class="row">
-            <div class="col-md-12">
+            <div class="col-md-12 mt-5">
                 <div class="card">
                     <div class="card-header p-3 white-text kaban-color">
                         Profile

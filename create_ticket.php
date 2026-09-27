@@ -3,7 +3,7 @@
 <?php include("includes/navbar.php") ?>
 <?php $page_title = "KabanDesk"; ?>
 
-<div class="container">
+<div class="container mt-5">
     <div class="row mx-auto">
         <div class="col-md-12 mb-2">
             <div class="row mt-5">
@@ -23,7 +23,7 @@
                                             </div>
                                             <div class="col-md-12 mt-2">
                                                 <label for="subject">Description <span class="text-danger font-weight-bold">*</span></label>
-                                                <textarea class="form-control" name="description" id="description" rows="4" style="resize:none"></textarea>
+                                                <textarea class="form-control" name="description" id="description" rows="10" style="resize:none"></textarea>
                                             </div>
                                             <div class="col-md-6 mt-2">
                                                 <label>Category <span class="text-danger font-weight-bold">*</span></label>
@@ -35,12 +35,7 @@
                                                             echo "<option value='".$get_category[$i]['id']."'>".$get_category[$i]['name']."</option>";
                                                         }
                                                     ?>
-                                                    <option value="Others">Others</option>
                                                 </select>
-                                                <div class="d-none" id="other_category_container">
-                                                    <label for="subject">Please specify a Category <span class="text-danger font-weight-bold"></span></label>
-                                                    <input type="text" class="form-control form-control-sm" name="other_category" id="other_category" placeholder="e.g Service Request">
-                                                </div>
                                             </div>
                                             <div class="col-md-6 mt-2">
                                                 <label>Priority <span class="text-danger font-weight-bold">*</span></label>
@@ -83,16 +78,3 @@
     </div>
 </div>
 <?php include("includes/footer.php"); ?>
-<script>
-$(function () {
-    // var currentPage = window.location.pathname.split("/").pop();
-
-    // $(".nav-link").each(function () {
-    //     var href = $(this).attr("href");
-
-    //     if (href === currentPage) {
-    //         $(this).addClass("active");
-    //     }
-    // });
-});
-</script>

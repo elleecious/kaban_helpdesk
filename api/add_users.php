@@ -22,14 +22,16 @@
             "status" => "error",
             "message" => "Email is already registered",
         );
+        echo json_encode($response);
+        exit;
     }
 
     $get_username = retrieve("SELECT * FROM users WHERE id=?",array($login_id));
 
     if ($password == $confirm_password) {
-        $add_users_sql = manage("INSERT INTO users (name,username,email,password_hash,role,department,created_at) 
-                        VALUES(?,?,?,?,?,?,?)",
-                        array($name,$username,$email,$hashed_password,$role,$department,date('Y-m-d H:i:s')));
+        $add_users_sql = manage("INSERT INTO users (name,username,email,password_hash,role,department,status,created_at) 
+                        VALUES(?,?,?,?,?,?,?,?)",
+                        array($name,$username,$email,$hashed_password,$role,$department,1,date('Y-m-d H:i:s')));
 
         $logs_result = manage("INSERT INTO logs (username,computer_name,ip_address,page,action,details,date)
                     VALUES (?,?,?,?,?,?,?)",
