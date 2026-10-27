@@ -27,11 +27,11 @@ $ticket = $ticket[0];
 $ticket_number = $ticket['ticket_number'];
 
 // Get the resolving agent's name for the log entry
-$agent = retrieve("SELECT name FROM users WHERE id = ?", array($agentId));
+$agent = retrieve("SELECT username, name FROM users WHERE id = ?", array($agentId));
 $agentName = $agent[0]['name'] ?? 'Unknown';
 $agentUser = $agent[0]['username'] ?? 'Unknown';
 
-$leads = retrieve("SELECT id FROM users WHERE role IN ('IT Manager', 'IT Supervisor')", []);
+$leads = retrieve("SELECT id FROM users WHERE role IN ('IT Helpdesk Support','IT Manager', 'IT Supervisor')", []);
 $leadsIds = array_column($leads,'id');
 
 
@@ -39,19 +39,19 @@ $leadsIds = array_column($leads,'id');
 // Only the assigned Agent can resolve their own ticket, and only if it isn't already Resolved/Closed
 $rowsAffected = manage(
     "UPDATE tickets 
-     SET status = 'Resolved', resolved_at = NOW(), resolution_notes = ?, updated_at = ? 
+     SET status = 'Resolved', resolved_at = ?, resolution_notes = ?, updated_at = ? 
      WHERE id = ? AND assigned_to = ? AND status NOT IN ('Resolved','Closed')",
-    array($notes, date('Y-m-d H:i:s'), $ticketId, $agentId));
+    array(date('Y-m-d H:i:s'), $notes, date('Y-m-d H:i:s'), $ticketId, $agentId));
 
 if ($rowsAffected > 0) {
 
      $link = "ticket_detail.php?id=$ticketId";
 
-    //Notifies Supervisor and Manager that they resolved the ticket
+    //Notifies Helpdesk Support, Supervisor and Manager that they resolved the ticket
     create_notification_bulk(
         $leadsIds,
         'resolved_ticket',
-        "Ticket #{$ticket_number} was resolved by <br> {$agentName}",
+        "Ticket #{$ticket_number} was resolved by {$agentName}",
         "ticket_detail.php?id={$ticketId}",
         $ticketId
     );
@@ -60,7 +60,7 @@ if ($rowsAffected > 0) {
     create_notification(
         $ticket['created_by'],
         'resolved_ticket',
-        "Your ticket #{$ticket_number} has been resolved - <br> please confirm or reopen if the issue persists",
+        "Your ticket #{$ticket_number} has been resolved - please confirm or reopen if the issue persists",
         "ticket_detail.php?id=$ticketId",
         $ticketId
     );
@@ -72,7 +72,7 @@ if ($rowsAffected > 0) {
             gethostbyaddr($_SERVER['REMOTE_ADDR']),
             getLocalIP(),
             "Ticket Detail",
-            "UPDATE",
+            "RESOLVED TICKET",
             "<details>
                 <p>Ticket Resolved</p>
                 <p>

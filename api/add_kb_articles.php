@@ -18,16 +18,23 @@ if (empty($kb_category)) {
     exit;
 }
 
+$category_code = retrieve(
+    "SELECT code FROM categories WHERE id=?",
+    array($kba_category);
+);
+
+$article_number = "KB-" . $category_code[0]['code'] . "-" . getRandomString(6);
+
 $get_username = retrieve("SELECT * FROM users WHERE id=?",array($login_id));
 
-$add_kba_sql = manage("INSERT INTO kb_articles (category_id, title, body, created_by, created_at) 
-    VALUES(?,?,?,?,?)",array($kba_category, $kba_title, $kba_description, $login_id, date("Y-m-d H:i:s")));
+$add_kba_sql = manage("INSERT INTO kb_articles (category_id, article_number, title, body, created_by, created_at) 
+    VALUES(?,?,?,?,?,?)",array($kba_category, $article_number, $kba_title, $kba_description, $login_id, date("Y-m-d H:i:s")));
 
 $logs_result = manage("INSERT INTO logs (username,computer_name,ip_address,page,action,details,date)
                     VALUES (?,?,?,?,?,?,?)",
                 array($get_username[0]['username'], gethostbyaddr($_SERVER['REMOTE_ADDR']),getLocalIP(),"Add KB Articles","ADD",         
                     "<details>
-                        <p>Add User</p>
+                        <p>Add KB Articles</p>
                         <p>
                             Title: <span class='font-weight-bold'>".$kba_title."</span><br>
                             Created By: <span class='font-weight-bold'>".$get_username[0]['username']."</span><br>

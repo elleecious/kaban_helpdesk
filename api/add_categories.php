@@ -1,4 +1,7 @@
 <?php
+
+    $skip_activity = true; 
+
     include('../config/connect.php');
     include("../includes/session.php");
     include('../library/functions.php');
@@ -15,7 +18,7 @@
 
     $logs_result = manage("INSERT INTO logs (username, computer_name,ip_address,page,action,details,date)
             VALUES (?,?,?,?,?,?,?)",
-        array($get_username[0]['username'], gethostbyaddr($_SERVER['REMOTE_ADDR']),getLocalIP(),"Add Category","ADD",         
+        array($get_username[0]['username'], gethostbyaddr($_SERVER['REMOTE_ADDR']),getLocalIP(),"Manage Categories","ADD CATEGORY",         
             "<details>
                 <p>Add Category</p>
                 <p>

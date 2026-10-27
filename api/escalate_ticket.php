@@ -1,4 +1,7 @@
 <?php
+
+$skip_activity = true; 
+
 include('../config/connect.php');
 include('../includes/session.php');
 include('../library/functions.php');
@@ -26,6 +29,7 @@ if (empty($getTicket)) {
 $ticket = $getTicket[0];
 
 $get_agent = retrieve("SELECT name FROM users WHERE id = ?", array($agentId));
+$agentUser = $get_agent[0]['username'] ?? 'Unknown';
 $agentName = $get_agent[0]['name'] ?? 'Unknown';
 
 // Note: assigned_to stays as-is — we're NOT unassigning, just flagging + storing who escalated it
@@ -53,11 +57,11 @@ if ($rowsAffected > 0) {
     $logs_result = manage("INSERT INTO logs (username,computer_name,ip_address,page,action,details,date)
         VALUES (?,?,?,?,?,?,?)",
         array(
-            $agentName,
+            $agentUser,
             $_SERVER['REMOTE_ADDR'],
             getLocalIP(),
             "Ticket Detail",
-            "UPDATE",
+            "ESCALATE TICKET",
             "<details><p>Ticket Escalated</p><p>Ticket #: ".$ticket['ticket_number']." — Reason: ".$reason."</p></details>",
             date('Y-m-d H:i:s')
         )

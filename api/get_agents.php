@@ -1,4 +1,7 @@
 <?php
+
+$skip_activity = true; 
+
 include('../config/connect.php');
 
 header('Content-Type: application/json');
@@ -11,10 +14,11 @@ global $pdo;
 try {
     $stmt = $pdo->prepare(
         "SELECT u.id, u.name,
-                (SELECT COUNT(*) FROM tickets t WHERE t.assigned_to = u.id AND t.status NOT IN ('Resolved','Closed')) AS open_count
-         FROM users u
-         WHERE u.role = 'IT Support Specialist'
-         ORDER BY u.name ASC"
+       (SELECT COUNT(*)  FROM tickets t WHERE t.assigned_to = u.id 
+          AND t.status NOT IN ('Resolved', 'Closed')
+       ) AS open_count FROM users u
+        WHERE u.role IN ('IT Support Specialist', 'System Administrator')
+        ORDER BY u.name ASC"
     );
     $stmt->execute();
     $response['agents'] = $stmt->fetchAll(PDO::FETCH_ASSOC);

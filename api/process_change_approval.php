@@ -88,7 +88,7 @@
         create_notification(
             $changeRequest['requestor_id'],
             'approved_request',
-            "Your Change Request #{$crf_number} has been Approved by <br> {$approverName}",
+            "Your Change Request #{$crf_number} has been Approved by the <br> {$approverName}",
             $link,
             null,
             $changeRequestId
@@ -97,7 +97,7 @@
         create_notification(
             $changeRequest['requestor_id'],
             'reject_request',
-            "Your Change Request #{$crf_number} has been Rejected by <br> {$approverName}",
+            "Your Change Request #{$crf_number} has been Rejected by the <br> {$approverName}",
             $link,
             null,
             $changeRequestId

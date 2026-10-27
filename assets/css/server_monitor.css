@@ -1,0 +1,150 @@
+/* Same look for every header on this page */
+
+  #server-monitor-page { overflow-x: hidden !important; }
+  #server-monitor-page .sm-header { background: var(--kaban-purple, #5b3a8c); }
+  #server-monitor-page .sm-btn { font-size: 0.8rem; padding: 0.45rem 1rem; }
+
+  /* Range buttons sit on the purple header */
+  #server-history-ranges .btn { font-size: 0.75rem; padding: 0.3rem 0.7rem; color: #fff; border-color: rgba(255,255,255,.6); }
+  #server-history-ranges .btn.active { background: #fff; color: var(--sh-accent, #5b3a8c); }
+
+  /* Compact legend */
+  #server-monitor-page .sm-legend { font-size: 0.75rem; color: #6b7280; }
+  #server-monitor-page .sm-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 4px; }
+
+    /* Same look for every header on this page */
+  #server-monitor-page .sm-header { background: var(--kaban-purple, #5b3a8c); }
+  #server-monitor-page .sm-btn { font-size: 0.8rem; padding: 0.45rem 1rem; }
+
+  /* Range buttons sit on the purple header */
+  #server-history-ranges .btn { font-size: 0.75rem; padding: 0.3rem 0.7rem; color: #fff; border-color: rgba(255,255,255,.6); }
+  #server-history-ranges .btn.active { background: #fff; color: var(--sh-accent, #5b3a8c); }
+
+  /* Table text sized to match the cards */
+  #server-monitor-page .sm-table th { font-size: 0.72rem; text-transform: uppercase; letter-spacing: .03em; color: #6b7280; font-weight: 600; white-space: nowrap; }
+  #server-monitor-page .sm-table td { font-size: 0.85rem; }
+  #server-monitor-page .sm-table th:first-child,
+  #server-monitor-page .sm-table td:first-child { padding-left: 1rem; }
+
+  /* Compact legend */
+  #server-monitor-page .sm-legend { font-size: 0.75rem; color: #6b7280; }
+  #server-monitor-page .sm-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 4px; }
+
+
+.server-health-card {
+  --sh-accent: var(--kaban-purple, #5b3a8c);
+  --sh-bar-bg: rgba(91, 58, 140, 0.12);
+  border-radius: 0.65rem;
+  overflow: hidden;
+}
+
+.server-health-card .card-header {
+  border-bottom: none;
+}
+
+.server-health-card .metric-label {
+  color: var(--sh-accent);
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+
+.server-health-card .metric-value {
+  font-variant-numeric: tabular-nums;
+  font-size: 0.9375rem;
+}
+
+.server-health-card .metric-bar {
+  height: 6px;
+  border-radius: 999px;
+  background: var(--sh-bar-bg);
+  overflow: hidden;
+  margin-top: 0.35rem;
+}
+
+.server-health-card .metric-bar-fill {
+  height: 100%;
+  width: 0%;
+  border-radius: inherit;
+  background: var(--sh-accent);
+  transition: width 0.45s ease, background-color 0.35s ease;
+}
+
+.server-health-card .metric-bar-fill.level-ok { background: #22c55e; }
+.server-health-card .metric-bar-fill.level-warn { background: #f59e0b; }
+.server-health-card .metric-bar-fill.level-crit { background: #ef4444; }
+
+/* Status pill — solid, matches your screenshot */
+.server-status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.25rem 0.65rem;
+  border-radius: 999px;
+  line-height: 1.2;
+  border: none;
+}
+
+.server-status-pill .status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: currentColor;
+}
+
+.server-status-pill.is-online {
+  background: #16a34a;
+  color: #fff;
+  box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.25);
+}
+
+.server-status-pill.is-online .status-dot {
+  animation: sh-pulse 1.8s ease-in-out infinite;
+}
+
+.server-status-pill.is-degraded {
+  background: #d97706;
+  color: #fff;
+  box-shadow: 0 0 0 3px rgba(217, 119, 6, 0.25);
+}
+
+.server-status-pill.is-unreachable {
+  background: #64748b;
+  color: #fff;
+}
+
+@keyframes sh-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.55; transform: scale(0.85); }
+}
+
+.server-health-card.is-loading .metric-value {
+  color: transparent !important;
+  background: linear-gradient(90deg, #eee 25%, #f5f5f5 50%, #eee 75%);
+  background-size: 200% 100%;
+  animation: sh-shimmer 1.2s infinite;
+  border-radius: 4px;
+  min-width: 4rem;
+  min-height: 1em;
+  display: inline-block;
+}
+
+@keyframes sh-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.server-health-card--detail .metric-bar {
+  height: 8px;
+}
+
+.server-health-card--detail .metric-value {
+  font-size: 1.05rem;
+}
+
+.server-threshold-list .metric-label {
+  color: var(--sh-accent, #5b3a8c);
+  font-weight: 600;
+}

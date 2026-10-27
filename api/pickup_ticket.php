@@ -1,4 +1,7 @@
 <?php
+    
+    $skip_activity = true; 
+
     include('../config/connect.php');
     include('../includes/session.php');
     include('../library/functions.php');
@@ -37,8 +40,9 @@
         exit;
     }
 
-    $rowsAffected = manage("UPDATE tickets SET assigned_to = ?, status = 'In Progress' 
-        WHERE id = ? AND assigned_to IS NULL",array($login_id, $ticketId));
+    $rowsAffected = manage("UPDATE tickets SET assigned_to = ?, status = 'Open', 
+        started_at = COALESCE(started_at, NOW()), updated_at = NOW() 
+ WHERE id = ? AND assigned_to IS NULL",array($login_id, $ticketId));
 
     if ($rowsAffected > 0) {
 
@@ -47,7 +51,7 @@
          create_notification_bulk(
             $leadsIds,
             'resolved_ticket',
-            "Ticket #{$ticket_number} was picked up by <br> {$agentName}",
+            "Ticket #{$ticket_number} was picked up by {$agentName}",
             "ticket_detail.php?id={$ticketId}",
             $ticketId
         );
@@ -55,7 +59,7 @@
         create_notification(
             $ticket['created_by'],
             'ticket_assigned',
-            "Your ticket #{$ticket_number} has been picked up and is now In Progress",
+            "Your ticket #{$ticket_number} has been picked up by {$agentName}",
             $link,
             $ticketId
         );

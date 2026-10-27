@@ -32,8 +32,8 @@ $js_category_colors  = json_encode(array_map(
 ?>
 <div class="container mt-5">
     <div class="row mx-auto">
-        <div class="col-md-12">
-            <div class="row mt-5">
+        <div class="col-md-12 mt-5">
+            <div class="row">
                 <h2 class="text-center">Hello, <?php echo $name; ?></h2>
             </div>
             <span><?php echo $role; ?></span>
@@ -74,39 +74,7 @@ $js_category_colors  = json_encode(array_map(
                     </div>
                 </div>
                 <div class="mt-3" id="attentionAlertContainer"></div>
-                 <hr>
-                <div class="note border border-secondary col-md-3 mb-2">
-                    <strong>Configuration Shortuts</strong>
-                </div>
-                <div class="row">
-                    <div class="col-md-3 mt-2 hvr-pulse">
-                        <div class="mt-3 secondary-color" id="all_tickets" style="cursor: pointer;">
-                            <div class="p-4 text-white text-center">
-                                <span class="fa fa-ticket" style="font-size: 1rem;"></span>
-                                <span>All Tickets</span>
-                            </div>
-                        </div>
-                    </div>
-
-                     <div class="col-md-3 mt-2 hvr-pulse">
-                        <div class="mt-3 secondary-color" id="knowledge_base" style="cursor: pointer;">
-                            <div class="p-4 text-white text-center">
-                                <span class="fa fa-book-open" style="font-size: 1rem;"></span>
-                                <span>Knowledge Base</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col-md-3 mt-2 hvr-pulse">
-                        <div class="mt-3 secondary-color" id="change_request" style="cursor: pointer;">
-                            <div class="p-4 text-white text-center">
-                                <span class="fa fa-refresh" style="font-size: 1rem;"></span>
-                                <span>Change Request</span>
-                            </div>
-                        </div>
-                    </div>
-                    
-                </div>
+                <hr>
                 <div class="row g-3 mt-3">
                     <div class="col-lg-12">
                         <div class="card">
@@ -154,7 +122,7 @@ $js_category_colors  = json_encode(array_map(
                                                         SUM(CASE WHEN t.resolution_due_at < NOW() AND t.status NOT IN ('Resolved','Closed') THEN 1 ELSE 0 END) AS overdue_count
                                                 FROM users u
                                                 LEFT JOIN tickets t ON t.assigned_to = u.id
-                                                WHERE u.role = 'IT Support Specialist'
+                                                WHERE u.role IN ('IT Support Specialist', 'System Administrator')
                                                 GROUP BY u.id, u.name
                                                 ORDER BY open_count DESC",
                                                 array());
@@ -180,7 +148,7 @@ $js_category_colors  = json_encode(array_map(
                         <div class="card">
                             <div class="card-header p-3 white-text kaban-color">Escalations</div>
                             <div class="card-body">
-                                <table class="table table-bordered">
+                                <table class="table table-bordered" id="tblEscalated">
                                     <thead>
                                         <?php
                                             $thead=explode(",","Ticket #, Subject, From, Status");
@@ -210,9 +178,9 @@ $js_category_colors  = json_encode(array_map(
                                             } else {
                                                 echo "<tr>
                                                         <td colspan='4' class='text-center'>
-                                                            <h5 class='alert alert-info'>
+                                                            <h6 class='alert alert-info'>
                                                                 <span class='fa fa-info-circle'></span> No escalated tickets
-                                                            </h5>
+                                                            </h6>
                                                         </td>
                                                     </tr>";
                                             }
@@ -225,7 +193,7 @@ $js_category_colors  = json_encode(array_map(
                 </div>
                 
                 
-                <div class="row mt-3">
+                <div class="row mt-3 mb-3">
                     <div class="col-lg-12">
                         <div class="card">
                             <div class="card-header p-3 white-text kaban-color">Tickets by Category</div>
@@ -242,6 +210,7 @@ $js_category_colors  = json_encode(array_map(
     </div>
 </div>
 <?php include("includes/footer.php"); ?>
+<script src="/assets/js/chart.umd.min.js"></script>
 <script>
 $(document).ready(function(){
 
@@ -270,6 +239,15 @@ $(document).ready(function(){
     $("#all_tickets").click(function(e){
         window.location="all_tickets.php";
     });
+
+    $("#tblEscalated").DataTable({
+		"scrollX": true,
+		"info": true,
+		"lengthChange": true,
+		"paging": true,
+		"searching": true,
+        "pageLength":5,
+	});
 
 })
 </script>

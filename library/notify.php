@@ -11,14 +11,15 @@
  * @param int|null    $change_request_id  Related change request id, if applicable
  * @return bool                           True if the insert succeeded
  */
+
 function create_notification($user_id, $type, $message, $link, $ticket_id = null, $change_request_id = null) {
     $sql = "INSERT INTO notifications (user_id, type, ticket_id, change_request_id, message, link)
             VALUES (?, ?, ?, ?, ?, ?)";
-
     $rows = manage($sql, [$user_id, $type, $ticket_id, $change_request_id, $message, $link]);
-
     return $rows > 0;
 }
+
+
 
 /**
  * Create the same notification for multiple recipients at once.
@@ -27,6 +28,10 @@ function create_notification($user_id, $type, $message, $link, $ticket_id = null
  * @param int[] $user_ids
  */
 function create_notification_bulk(array $user_ids, $type, $message, $link, $ticket_id = null, $change_request_id = null) {
+    if (empty($user_ids)) {
+        error_log("create_notification_bulk called with empty user_ids list for type: $type");
+        return;
+    }
     foreach ($user_ids as $user_id) {
         create_notification($user_id, $type, $message, $link, $ticket_id, $change_request_id);
     }
@@ -49,17 +54,29 @@ function get_unread_count($user_id) {
  *
  * @param int $user_id
  * @param int $limit
+ * @param int $offset
  * @return array
  */
-function get_recent_notifications($user_id, $limit = 10) {
-    // LIMIT can't be a bound param reliably in all PDO emulation modes, so cast + inline it safely.
+
+function get_recent_notifications($user_id, $limit = 10, $offset = 0) {
+    // LIMIT/OFFSET can't be bound reliably in all PDO emulation modes, so cast + inline them safely.
     $limit = (int) $limit;
+    $offset = (int) $offset;
     $sql = "SELECT id, type, ticket_id, change_request_id, message, link, is_read, created_at
             FROM notifications
             WHERE user_id = ?
             ORDER BY created_at DESC
-            LIMIT $limit";
+            LIMIT $limit OFFSET $offset";
     return retrieve($sql, [$user_id]);
+}
+
+/**
+ * Total notification count for a user (so the frontend knows when to hide "Load more").
+ */
+function get_total_notification_count($user_id) {
+    $sql = "SELECT COUNT(*) AS total FROM notifications WHERE user_id = ?";
+    $result = retrieve($sql, [$user_id]);
+    return isset($result[0]['total']) ? (int) $result[0]['total'] : 0;
 }
 
 /**
@@ -87,5 +104,4 @@ function mark_all_as_read($user_id) {
     manage($sql, [$user_id]);
     return true;
 }
-
 ?>

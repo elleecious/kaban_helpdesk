@@ -1,5 +1,7 @@
 <?php
 
+    $skip_activity = true; 
+    
     include('../config/connect.php');
     include('../includes/session.php');
     include('../library/functions.php');

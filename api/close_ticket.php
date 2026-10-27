@@ -1,5 +1,5 @@
 <?php
-
+    
     include('../config/connect.php');
     include('../includes/session.php');
     include('../library/functions.php');
@@ -40,7 +40,7 @@
     try {
 
         $updated = manage(
-            "UPDATE tickets SET status = ?, closed_by   =?, closed_at = ? WHERE id = ?",
+            "UPDATE tickets SET status = ?, closed_by = ?, closed_at = ? WHERE id = ?",
             array('Closed', $login_id, date("Y-m-d H:i:s"), $ticket_id));
 
         if ($updated === false) {
@@ -51,7 +51,7 @@
 
         manage("INSERT INTO logs (username, computer_name, ip_address, page, action, details, date)
             VALUES (?,?,?,?,?,?,?)",
-        array($getEmployee[0]['username'], gethostbyaddr($_SERVER['REMOTE_ADDR']), getLocalIP(), "Close Ticket", "UPDATE",
+        array($getEmployee[0]['username'], gethostbyaddr($_SERVER['REMOTE_ADDR']), getLocalIP(), "Ticket Detail", "CLOSE TICKET",
             "<details>
                 <p>Close Ticket</p>
                 <p>

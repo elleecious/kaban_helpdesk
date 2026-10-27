@@ -64,7 +64,7 @@
 
         manage("INSERT INTO logs (username, computer_name, ip_address, page, action, details, date)
             VALUES (?,?,?,?,?,?,?)",
-        array($getEmployee[0]['username'], gethostbyaddr($_SERVER['REMOTE_ADDR']), getLocalIP(), "Edit Ticket", "UPDATE",
+        array($getEmployee[0]['username'], gethostbyaddr($_SERVER['REMOTE_ADDR']), getLocalIP(), "Create Ticket", "UPDATE TICKET",
             "<details>
                 <p>Update Ticket</p>
                 <p>
@@ -142,8 +142,8 @@
                         $getEmployee[0]['username'],
                         gethostbyaddr($_SERVER['REMOTE_ADDR']),
                         getLocalIP(),
-                        "Add Attachment",
-                        "ADD",
+                        "Create Ticket",
+                        "ADD ATTACHMENT",
                         "<details>
                             <p>Attachment Uploaded on Edit</p>
                             <p>

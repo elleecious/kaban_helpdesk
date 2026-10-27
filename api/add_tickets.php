@@ -1,5 +1,7 @@
 <?php
 
+    $skip_activity = true; 
+    
     include('../config/connect.php');
     include('../includes/session.php');
     include('../library/functions.php');
@@ -38,7 +40,7 @@
 
     if (empty($sla_rules)) {
         // Should never happen if defaults are seeded, but guard anyway
-        $response['message'] = 'SLA Rules  missing. Please contact Admin.';
+        $response['message'] = 'SLA Rules  missing. Please contact the Administrator.';
         echo json_encode($response);
         exit;
     }

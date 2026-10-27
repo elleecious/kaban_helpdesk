@@ -1,3 +1,4 @@
+<?php $skip_activity = true;  ?>
 <?php 
 include("config/connect.php");
 include("includes/session.php"); 
@@ -67,24 +68,25 @@ include("includes/session.php");
     <div class="row form-row gy-3">
       <div class="col-md-6">
         <div class="md-form">
-          <input type="text" id="reqName" class="form-control" value="<?= val($cr['requestor_name']) ?>" readonly>
           <label class="form-label active" for="reqName">Requestor's name</label>
+          <input type="text" id="reqName" class="form-control" value="<?= val($cr['requestor_name']) ?>" readonly>
         </div>
       </div>
       <div class="col-md-6">
         <div class="md-form">
-          <input type="text" id="dateSubmitted" class="form-control" value="<?= date("M j, Y", strtotime($cr['created_at'])) ?>" readonly>
           <label class="form-label active" for="dateSubmitted">Date submitted</label>
+          <input type="text" id="dateSubmitted" class="form-control" value="<?= date("M j, Y", strtotime($cr['created_at'])) ?>" readonly>
         </div>
       </div>
       <div class="col-md-6">
         <div class="md-form">
-          <input type="tel" id="contact_number" name="contact_number" class="form-control" value="<?= val($cr['contact_number']) ?>" required>
           <label class="form-label active" for="contact_number">Contact number <span class="req-mark">*</span></label>
+          <input type="tel" id="contact_number" name="contact_number" class="form-control" value="<?= val($cr['contact_number']) ?>" required>
         </div>
       </div>
       <div class="col-md-6">
         <div class="md-form">
+          <label class="form-label active" for="department">Department <span class="req-mark">*</span></label>
           <select id="department" name="department" class="form-select" required>
             <option value="" disabled>Choose department...</option>
             <?php

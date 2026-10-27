@@ -25,6 +25,8 @@
     <link rel="stylesheet" type="text/css" href="<?php echo $short_url;?>assets/css/sweetalert2.min.css">
     <link rel="stylesheet" type="text/css" href="<?php echo $short_url;?>assets/css/hover.css">
     <link rel="stylesheet" type="text/css" href="<?php echo $short_url;?>assets/css/style_v2.css">
+    <link rel="stylesheet" type="text/css" href="<?php echo $short_url;?>assets/css/notification.css">
+    <link rel="stylesheet" type="text/css" href="<?php echo $short_url;?>assets/css/toastr.min.css">
     <link rel="icon" href="<?php echo $short_url;?>assets/img/favicon.ico" type="image/x-icon">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -33,9 +35,13 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
     <style>
         .poppins-light { font-family: "Poppins", sans-serif; font-weight: 300; font-style: normal; }
-        .betson-color { background-color: #002E5D; }
-        header { background-color: #002E5D; padding: 20px; text-align: center; font-size: 24px; color: #fff; }
-        .side-nav { background-color: #002E5D !important; }
     </style>
+    <script>
+        try {
+            if (localStorage.getItem('kdSidebar') === 'collapsed') {
+                document.documentElement.classList.add('kd-sidebar-collapsed');
+            }
+        } catch (e) {}
+    </script>
 </head>
 <body class="poppins-light fixed-sn">

@@ -4,6 +4,12 @@
   border-radius: 1.25rem !important;
   padding: 0 !important;
   border: none !important;
+  overflow-x: hidden !important;
+}
+
+#notificationList {
+    max-height: 450px;
+    overflow-x: hidden !important; /* vertical scroll only — this was the likely cause */
 }
 
 /* Sub-badge positioning on user avatar */
@@ -44,6 +50,19 @@
   position: absolute;
   top: 18px;
   right: 18px;
+}
+
+.notification-item p,
+.notification-item span {
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    white-space: normal;
+}
+
+.notification-item p { white-space: pre-line; }
+
+.notification-item {
+    max-width: 100%;
 }
 
 /* Custom smaller sizing for MDB 4 pills tab header */

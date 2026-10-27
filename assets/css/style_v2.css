@@ -1,5 +1,115 @@
 @import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
 
+:root { --kd-purple: #431765; --kd-deep: #24034f; --kd-gold: #e2b13c; }
+
+/* top bar */
+.kd-menu-btn { display: inline-block !important; }
+.kd-navbar { background-color: var(--kd-purple) !important; }
+.kd-navbar .nav-link, .kd-menu-btn { color: rgb(255 255 255 / 88%); }
+.kd-navbar .nav-link:hover, .kd-menu-btn:hover,
+.kd-navbar .nav-item.active > .nav-link { color: var(--kd-gold); }
+.kd-navbar .kd-notif {
+    display: flex; align-items: center;
+    padding: .4rem 1rem;
+    background: rgb(255 255 255 / 12%);
+    border-radius: 999px;
+}
+.kd-navbar .kd-notif:hover { background: rgb(255 255 255 / 20%); }
+
+/* sidebar */
+.kd-sidenav { background: var(--kd-deep); }
+.kd-sidenav .kd-user { padding: 0 1rem 1rem; color: rgb(255 255 255 / 85%); }
+.kd-sidenav a.collapsible-header { color: rgb(255 255 255 / 85%); font-size: 1rem !important; }
+.kd-sidenav a.collapsible-header:hover { background: rgb(255 255 255 / 8%); }
+.kd-sidenav a.collapsible-header.active {
+    color: var(--kd-gold);
+    background: rgb(255 255 255 / 8%);
+    box-shadow: inset 3px 0 0 var(--kd-gold);
+}
+
+.side-nav.kd-sidenav .logo-wrapper {
+    height: auto !important;
+    overflow: visible;
+    padding: 1.5rem 1rem 1.25rem;
+    border-bottom: 1px solid rgb(255 255 255 / 12%);
+}
+.side-nav.kd-sidenav .logo-wrapper a { display: block; }
+.side-nav.kd-sidenav .logo-wrapper img {
+    display: block;
+    width: 100%;
+    max-width: 130px;
+    height: auto;
+    margin: 0 30px;
+    padding: 0;
+}
+
+/* lower the menu list */
+.kd-sidenav .kd-user { padding: 1rem 1rem .5rem; }
+.kd-sidenav .collapsible { margin-top: 1.25rem; }
+
+/* focus ring */
+.kd-navbar a:focus-visible, .kd-sidenav a:focus-visible { outline: 2px solid var(--kd-gold); outline-offset: 2px; }
+
+/* keep page content clear of the fixed navbar and sidebar */
+main { padding-top: 70px; }
+@media (min-width: 1200px) { main { padding-left: 0; } }
+
+/* vertically center everything in the top bar */
+.kd-navbar {
+    display: flex;
+    align-items: center;
+    min-height: 56px;
+    padding-top: 0;
+    padding-bottom: 0;
+}
+
+/* remove the float and MDB's offset on the hamburger wrapper */
+.kd-navbar .float-left {
+    float: none !important;
+    display: flex;
+    align-items: center;
+    margin: 0;
+}
+
+.kd-navbar .kd-menu-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 20px;
+    margin: 0 .5rem 0 0;
+    padding: 0;
+    font-size: 1.4rem;
+    line-height: 1;
+    color: #fff;
+}
+
+.kd-navbar .kd-menu-btn i {
+    margin: 0;
+    line-height: 1;
+}
+
+/* keep the brand and right-hand items aligned with it */
+.kd-navbar .navbar-brand { margin-top: 0; margin-bottom: 0; }
+
+/* the sidebar is always open on desktop, so hide the hamburger there */
+@media (min-width: 1200px) {
+    .kd-navbar .kd-menu-btn { display: none; }
+}
+
+.session-notice {
+  background: #f6f2fa;
+  border: 1px solid #d9c9ea;
+  border-radius: 6px;
+  padding: 14px 16px;
+  color: #212529;
+}
+.session-notice i,
+.session-notice strong {
+  color: #431765;   /* matches the navbar */
+}
+
+
 /* Hides the AM/PM text segment in the textbox */
 input[type="time"]::-webkit-datetime-edit-ampm-field {
   display: none !important;
@@ -11,6 +121,87 @@ input[type="time"]::-webkit-clear-button {
   -moz-appearance: none;
   appearance: none;
   margin: 0;
+}
+
+/* Ensure a smooth transition for all button properties */
+.btn {
+  transition: all 0.3s ease-in-out !important;
+}
+
+/* Primary */
+.btn-outline-primary:hover {
+  background-color: #3b71ca !important; 
+  color: #fff !important;
+  box-shadow: 0 4px 9px -4px #3b71ca !important;
+  transform: translateY(-2px) !important;
+}
+
+/* Secondary */
+.btn-outline-secondary:hover {
+  background-color: #9fa6b2 !important;
+  color: #fff !important;
+  box-shadow: 0 4px 9px -4px #9fa6b2 !important;
+  transform: translateY(-2px) !important;
+}
+
+/* Success */
+.btn-outline-success:hover {
+  background-color: #14a44d !important;
+  color: #fff !important;
+  box-shadow: 0 4px 9px -4px #14a44d !important;
+  transform: translateY(-2px) !important;
+}
+
+/* Danger */
+.btn-outline-danger:hover {
+  background-color: #dc4c64 !important;
+  color: #fff !important;
+  box-shadow: 0 4px 9px -4px #dc4c64 !important;
+  transform: translateY(-2px) !important;
+}
+
+/* Warning */
+.btn-outline-warning:hover {
+  background-color: #e4a11b !important;
+  color: #000 !important;
+  box-shadow: 0 4px 9px -4px #e4a11b !important;
+  transform: translateY(-2px) !important;
+}
+
+/* Info */
+.btn-outline-info:hover {
+  background-color: #54b4d3 !important;
+  color: #fff !important;
+  box-shadow: 0 4px 9px -4px #54b4d3 !important;
+  transform: translateY(-2px) !important;
+}
+
+/* Light */
+.btn-outline-light:hover {
+  background-color: #fbfbfb !important;
+  color: #332d2d !important;
+  box-shadow: 0 4px 9px -4px rgba(251, 251, 251, 0.5) !important;
+  transform: translateY(-2px) !important;
+}
+
+/* Dark */
+.btn-outline-dark:hover {
+  background-color: #332d2d !important;
+  color: #fff !important;
+  box-shadow: 0 4px 9px -4px #332d2d !important;
+  transform: translateY(-2px) !important;
+}
+
+/*Purple*/
+.btn-outline-purple {
+  color: #4A1F8F !important;
+  border-color: #4A1F8F !important;
+}
+
+.btn-outline-purple:hover {
+  color: #fff !important;
+  background-color: #4A1F8F !important;
+  border-color: #4A1F8F !important;
 }
 
 
@@ -77,7 +268,7 @@ input[type="time"]::-webkit-clear-button {
 
 
 body {
-    background: #f2f4f7;
+    background: #ffffff;
     font-family: 'Poppins', sans-serif;
     font-size: 0.9rem;
   }
@@ -167,16 +358,6 @@ body {
     position: relative;
     width: 42px;
     height: 42px;
-}
-
-.sub-badge {
-    position: absolute;
-    bottom: -2px;
-    right: -2px;
-    width: 18px;
-    height: 18px;
-    font-size: 8px;
-    border: 2px solid #fff;
 }
 
 /* Clean Multi-line Truncation */
