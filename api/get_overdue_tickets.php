@@ -1,50 +1,44 @@
 <?php
 
-    include('../config/connect.php');
-    include('../includes/session.php');
-    include('../library/functions.php');
+$skip_activity = true;
 
-    header('Content-Type: application/json');
-    $response = array('status' => 'success', 'tickets' => array());
+include('../config/connect.php');
+include('../includes/session.php');
+include('../library/functions.php');
 
-    global $pdo; // adjust to your actual PDO variable name
+header('Content-Type: application/json');
 
-    // $stmt = $pdo->prepare(
-    //     "SELECT id, subject, priority
-    //     FROM tickets
-    //     WHERE sla_due_at < NOW() 
-    //     AND status NOT IN ('Resolved', 'Closed')
-    //     ORDER BY sla_due_at ASC"
-    // );
-
-    $stmt = $pdo->prepare(
-    "SELECT id, subject, priority,
-            CASE 
-                WHEN status = 'Open' AND response_due_at < NOW() THEN 'Response'
-                WHEN status NOT IN ('Resolved','Closed') AND resolution_due_at < NOW() THEN 'Resolution'
-            END AS breach_type
-     FROM tickets
-     WHERE status NOT IN ('Resolved', 'Closed')
-       AND (
-            (status = 'Open' AND response_due_at < NOW())
-            OR resolution_due_at < NOW()
-       )
-     ORDER BY resolution_due_at ASC"
+try {
+    $rows = retrieve(
+        "SELECT id, ticket_number, subject, priority,
+                CASE
+                    WHEN resolution_due_at < NOW() THEN 'Resolution'
+                    WHEN status = 'Open' AND response_due_at < NOW() THEN 'Response'
+                END AS breach_type
+         FROM tickets
+         WHERE status NOT IN ('Resolved', 'Closed', 'Deleted')
+           AND (
+                resolution_due_at < NOW()
+                OR (status = 'Open' AND response_due_at < NOW())
+           )
+         ORDER BY FIELD(priority, 'Critical','High','Medium','Low'), resolution_due_at ASC",
+        array()
     );
-    $stmt->execute();
-    $tickets = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    $tickets_out = array();
-    foreach ($tickets as $t) {
-        $tickets_out[] = array(
-            'id'       => $t['id'],
-            'subject'  => $t['subject'],
-            'priority' => $t['priority'],
-        );
+    $tickets = [];
+    foreach ($rows as $r) {
+        $tickets[] = [
+            'id'            => $r['id'],
+            'ticket_number' => htmlspecialchars($r['ticket_number']),
+            'subject'       => $r['subject'],
+            'priority'      => htmlspecialchars($r['priority']),
+            'breach_type'   => $r['breach_type'],
+        ];
     }
 
-    $response['tickets'] = $tickets_out;
-    echo json_encode($response);
-    exit;
+    echo json_encode(['status' => 'success', 'tickets' => $tickets]);
 
-?>
+} catch (Exception $e) {
+    echo json_encode(['status' => 'error', 'message' => 'Failed to load overdue tickets.']);
+}
+exit;

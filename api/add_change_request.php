@@ -1,4 +1,7 @@
 <?php
+
+    $skip_activity = true;
+
     include('../config/connect.php');
     include("../includes/session.php");
     include('../library/functions.php');
@@ -48,7 +51,7 @@
 
         manage("INSERT INTO logs (username,computer_name,ip_address,page,action,details,date)
             VALUES (?,?,?,?,?,?,?)",
-        array($get_username[0]['username'], gethostbyaddr($_SERVER['REMOTE_ADDR']), getLocalIP(), "Change Request", "CREATE",
+        array($get_username[0]['username'], gethostbyaddr($_SERVER['REMOTE_ADDR']), getLocalIP(), "Change Request", "CREATE CHANGE REQUEST",
             "<details>
                 <p>Submitted Change Request <span class='font-weight-bold'>".$crf_number."</span></p>
                 <p>

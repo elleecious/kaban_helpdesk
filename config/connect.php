@@ -1,13 +1,22 @@
 <?php
 
 // Set timezone
-date_default_timezone_set("Asia/Manila");
+date_default_timezone_set('Asia/Manila');
+
+
+// Report all PHP errors
+error_reporting(E_ALL);
+
+// Force errors to be displayed on the screen
+ini_set('display_errors', '1');
+ini_set('display_startup_errors', '1');
+
 
 // Define database connection variables
 $dbhost = "localhost";
-$dbname = "kaban_helpdesk_db";
+$dbname = "kaban_helpdesk";
 $dbusername = "root";
-$dbpassword = "";
+$dbpassword = "@n0c.Kaban!!";
 
 
 try {
@@ -19,9 +28,10 @@ try {
         [
             PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
             PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-            PDO::ATTR_EMULATE_PREPARES   => false
+            PDO::ATTR_EMULATE_PREPARES => false
         ]
     );
+    $pdo->exec("SET time_zone = '+08:00'");
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION); // Enable exceptions for errors
     $pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
 

@@ -1,4 +1,6 @@
 <?php 
+
+$skip_activity = true; 
 include("config/connect.php");
 include("includes/session.php"); 
 ?>
@@ -44,21 +46,21 @@ include("includes/session.php");
     <!-- Requestor info -->
     <div class="row form-row gy-3">
       <div class="col-md-6">
-        <div class="md-form">
-          <label class="form-label" for="reqName">Requestor's name <span class="req-mark">*</span></label>
+        <div class="form-outline">
           <input type="text" id="reqName" name="reqName"  class="form-control" value="<?php echo $requested_by[0]['name']; ?>">
+          <label class="form-label" for="reqName">Requestor's name <span class="req-mark">*</span></label>
         </div>
       </div>
       <div class="col-md-6">
-        <div class="md-form">
-          <label class="form-label" for="dateSubmitted">Date submitted <span class="req-mark">*</span></label>
+        <div class="form-outline">
           <input type="date" id="dateSubmitted" name="dateSubmitted" class="form-control" required>
+          <label class="form-label" for="dateSubmitted">Date submitted <span class="req-mark">*</span></label>
         </div>
       </div>
       <div class="col-md-6">
-        <div class="md-form">
-          <label class="form-label" for="contact_number">Contact number <span class="req-mark">*</span></label>
+        <div class="form-outline">
           <input type="tel" id="contact_number" name="contact_number" class="form-control" required>
+          <label class="form-label" for="contact_number">Contact number <span class="req-mark">*</span></label>
         </div>
       </div>
       <div class="col-md-6">
@@ -97,27 +99,27 @@ include("includes/session.php");
   <div class="form-body">
     <div class="row form-row gy-3">
       <div class="col-md-6">
-        <div class="md-form">
-          <label class="form-label" for="change_title">Change title <span class="req-mark">*</span></label>
+        <div class="form-outline">
           <input type="text" id="change_title" name="change_title" class="form-control" required>
+          <label class="form-label" for="change_title">Change title <span class="req-mark">*</span></label>
         </div>
       </div>
       <div class="col-md-6">
-        <div class="md-form">
-          <label class="form-label" for="location_site">Location / site affected</label>
+        <div class="form-outline">
           <input type="text" id="location_site" name="location_site" class="form-control" placeholder="e.g. Casino Floor, Hotel Lobby">
+          <label class="form-label" for="location_site">Location / site affected</label>
         </div>
       </div>
       <div class="col-md-6">
-        <div class="md-form">
-          <label class="form-label" for="requested_implementation_date">Requested implementation date <span class="req-mark">*</span></label>
+        <div class="form-outline">
           <input type="date" id="requested_implementation_date" name="requested_implementation_date" class="form-control" required>
+          <label class="form-label" for="requested_implementation_date">Requested implementation date <span class="req-mark">*</span></label>
         </div>
       </div>
       <div class="col-md-6">
-        <div class="md-form">
-          <label class="form-label" for="systems_affected">Systems / services affected</label>
+        <div class="form-outline">
           <input type="text" id="systems_affected" name="systems_affected" class="form-control" placeholder="e.g. NetSuite, Opera Cloud, MyACP">
+          <label class="form-label" for="systems_affected">Systems / services affected</label>
         </div>
       </div>
     </div>

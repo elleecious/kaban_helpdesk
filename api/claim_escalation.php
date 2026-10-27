@@ -1,4 +1,7 @@
 <?php
+
+$skip_activity = true;
+
 include('../config/connect.php');
 include('../includes/session.php');
 include('../library/functions.php');
@@ -31,7 +34,9 @@ $supervisorName = $get_supervisor[0]['name'] ?? 'Unknown';
 $supervisorUser = $get_supervisor[0]['username'] ?? 'Unknown';
 
 $rowsAffected = manage(
-    "UPDATE tickets SET assigned_to = ?, status = 'In Progress', updated_at = NOW() 
+    "UPDATE tickets
+     SET assigned_to = ?, status = 'In Progress',
+         started_at = COALESCE(started_at, NOW()), updated_at = NOW()
      WHERE id = ? AND status = 'Escalated'",
     array($supervisorId, $ticketId)
 );
@@ -63,7 +68,7 @@ if ($rowsAffected > 0) {
             $_SERVER['REMOTE_ADDR'],
             getLocalIP(),
             "Ticket Detail",
-            "UPDATE",
+            "CLAIM ESCALATION",
             "<details>
                 <p>Escalation Taken Over</p><p>Ticket #: ".$ticket['ticket_number']." — Taken by: <span class='font-weight-bold'>".$supervisorName."</span></p>
             </details>",

@@ -1,4 +1,5 @@
 <?php
+
 include('../config/connect.php');
 include('../includes/session.php');
 include("../library/functions.php");
@@ -29,14 +30,14 @@ try {
         $tickets[] = [
             'id'             => $row['id'],
             'ticket_number'  => htmlspecialchars($row['ticket_number']),
-            'subject'        => htmlspecialchars($row['subject']),
+            'subject'        => $row['subject'],
             'priority'       => htmlspecialchars($row['priority']),
             'priority_class' => $priorityClass,
             'waiting_time'   => htmlspecialchars(format_waiting_time($row['waiting_minutes']))
         ];
     }
 
-    echo json_encode(['status' => 'success', 'data' => $tickets]);
+    echo json_encode(['status' => 'success', 'data' => $tickets, 'role' => $role]);
 
 } catch (Exception $e) {
     echo json_encode(['status' => 'error', 'message' => $e->getMessage()]);

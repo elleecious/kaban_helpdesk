@@ -182,7 +182,7 @@
   <div class="modal-dialog modal-lg" role="document">
     <div class="modal-content">
       <div class="modal-header kaban-color white-text">
-        <h5 class="modal-title" id="unasssignedTicketLabel">Unassigned Tickets</h5>
+        <h5 class="modal-title" id="unasssignedTicketLabel">Pickup Tickets</h5>
         <button type="button" class="close white-text" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">&times;</span>
         </button>
@@ -199,31 +199,8 @@
               ?>
               </tr>
             </thead>
-            <tbody>
-               <?php
-                    $get_unassigned_tickets = retrieve("SELECT id, ticket_number, subject, priority, 
-                      TIMESTAMPDIFF(MINUTE, created_at, NOW()) AS waiting_minutes
-                    FROM tickets WHERE assigned_to IS NULL AND status = 'Open'
-                    ORDER BY 
-                    FIELD(priority, 'Critical','High','Medium','Low'), created_at ASC",array());
-                    if (count($get_unassigned_tickets) > 0) {
-                      for ($i=0; $i < count($get_unassigned_tickets); $i++) { 
-                        echo "<tr>
-                            <td>".$get_unassigned_tickets[$i]['ticket_number']."</td>
-                            <td>".$get_unassigned_tickets[$i]['subject']."</td>
-                            <td>".$get_unassigned_tickets[$i]['priority']."</td>
-                            <td>".format_waiting_time($get_unassigned_tickets[$i]['waiting_minutes'])."</td>
-                            <td><a class='btn btn-sm btn-primary btn-claim' data-id='".$get_unassigned_tickets[$i]['id']."'>Claim</a></td>
-                        </tr>";
-                      }
-                    } else {
-                      echo "<tr>
-                              <td colspan='5' class='text-center'>
-                                <h3 class='alert alert-warning'><span class='fa fa-info-circle'></span> No unassigned tickets right now. </h3>
-                              </td>
-                            </tr>";
-                    }
-               ?>
+            <tbody id="pickupTicketsBody">
+               
             </tbody>
           </table>
       </div>
@@ -252,43 +229,3 @@
         </div>
     </div>
 </div>
-
-<!-- Reset Password Modal -->
-<div class="modal fade" id="resetPasswordModal" tabindex="-1" role="dialog">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Reset Password</h5>
-                <button type="button" class="close" data-dismiss="modal">&times;</button>
-            </div>
-            <div class="modal-body">
-                <p>Resetting password for: <strong id="resetPasswordName"></strong></p>
-
-                <label>New Password</label>
-                <div class="input-group">
-                    <input type="text" class="form-control form-control-md" id="newPassword" placeholder="Enter or generate a password">
-                    <div class="input-group-append" style="margin-top: -10px;">
-                        <button class="btn btn-outline-secondary btn-md" type="button" id="btnGeneratePassword">Generate</button>
-                    </div>
-                </div>
-                <small class="text-muted">Minimum 4 characters. Share this with the user securely — it won't be shown again.</small>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-primary" id="btnConfirmReset">Confirm Reset</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Trigger Button inside Table Cell -->
-<td>
-    <button type="button" 
-            class="btn btn-info btn-sm reset_password" 
-            data-id="<?php echo htmlspecialchars($get_users[$i]['id']); ?>"
-            data-name="<?php echo htmlspecialchars($get_users[$i]['name']); ?>"
-            data-toggle="modal" 
-            data-target="#resetPasswordModal">
-        Reset Password
-    </button>
-</td>

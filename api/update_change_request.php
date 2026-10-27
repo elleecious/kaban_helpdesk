@@ -67,7 +67,7 @@
 
         manage("INSERT INTO logs (username,computer_name,ip_address,page,action,details,date)
                 VALUES (?,?,?,?,?,?,?)",
-            array($get_username[0]['username'], gethostbyaddr($_SERVER['REMOTE_ADDR']), getLocalIP(), "Change Request", "UPDATE",
+            array($get_username[0]['username'], gethostbyaddr($_SERVER['REMOTE_ADDR']), getLocalIP(), "Edit Change Request", "UPDATE CHANGE REQUEST",
                 "<details>
                     <p>Updated Change Request <span class='font-weight-bold'>".$cr['crf_number']."</span></p>
                     <p>

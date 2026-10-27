@@ -1,4 +1,7 @@
 <?php
+
+$skip_activity = true;
+
 // Ensure active session for user ID
 include('../config/connect.php');
 include('../includes/session.php');
@@ -25,13 +28,12 @@ try {
                 u.name AS requester_name
             FROM tickets t
             JOIN users u ON t.created_by = u.id
-            WHERE t.assigned_to = ? 
-              AND t.status NOT IN ('Resolved', 'Closed')
+            WHERE t.status NOT IN ('Resolved', 'Closed', 'Deleted')
             ORDER BY 
                 FIELD(t.priority, 'Critical', 'High', 'Medium', 'Low'),
                 t.resolution_due_at ASC";
 
-    $getTicketQueue = retrieve($sql, array($login_id));
+    $getTicketQueue = retrieve($sql, array());
 
     $tickets = [];
 
@@ -56,7 +58,7 @@ try {
         $tickets[] = [
             'ticket_id'      => $row['ticket_id'],
             'ticket_number'  => htmlspecialchars($row['ticket_number']),
-            'subject'        => htmlspecialchars($row['subject']),
+            'subject'        => $row['subject'],
             'priority'       => htmlspecialchars($row['priority']),
             'sla_display'    => $slaDisplay,
             'status'         => htmlspecialchars($row['status']),

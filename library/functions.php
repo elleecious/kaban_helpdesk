@@ -31,17 +31,30 @@
             'icon'  => 'fa-refresh',
             'id'    => 'change_request',
         ],
-        [
-            'title' => 'User Control',
-            'icon'  => 'fa-user-cog',
-            'id'    => 'user_control',
-        ],
+        // [
+        //     'title' => 'User Control',
+        //     'icon'  => 'fa-user-cog',
+        //     'id'    => 'user_control',
+        // ],
         [
             'title' => 'Logs',
             'icon'  => 'fa-history',
             'id'    => 'logs',
         ],
     ];
+
+    function last_seen_ago($minutes) {
+        if ($minutes === null) return '';
+        $minutes = max(0, (int)$minutes);
+
+        if ($minutes < 1)      return 'just now';
+        if ($minutes < 60)     return $minutes . ' min' . ($minutes != 1 ? 's' : '') . ' ago';
+        if ($minutes < 1440)   { $h = floor($minutes / 60);     return $h . ' hr'    . ($h != 1 ? 's' : '') . ' ago'; }
+        if ($minutes < 43200)  { $d = floor($minutes / 1440);   return $d . ' day'   . ($d != 1 ? 's' : '') . ' ago'; }
+        if ($minutes < 525600) { $m = floor($minutes / 43200);  return $m . ' month' . ($m != 1 ? 's' : '') . ' ago'; }
+        $y = floor($minutes / 525600);
+        return $y . ' year' . ($y != 1 ? 's' : '') . ' ago';
+    }
 
     // Generates a unique ticket number based on the category code and a random alphanumeric string.
     function generateTicketNumber($pdo, $category_code) {
@@ -58,6 +71,19 @@
 
         return $candidate;
     }
+
+    function generateRandomString($length = 6) {
+        $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        $result = '';
+        $max = strlen($characters) - 1;
+
+        for ($i = 0; $i < $length; $i++) {
+            $result .= $characters[random_int(0, $max)];
+        }
+
+        return $result;
+    }
+
 
     // Generates a unique CRF number based on the year and a random alphanumeric string.
     function generateCrfNumber($year) {
@@ -81,9 +107,9 @@
             case 'Major':
                 return ['IT Manager', 'General Manager'];   // both required, in sequence
             case 'Emergency':
-                return ['IT Manager', 'IT Supervisor', 'IT Support Specialist'];   // OR Authorized Personnel — handled as an "either" case below
+                return ['IT Manager', 'IT Supervisor', 'IT Support Specialist', 'System Administrator'];   // OR Authorized Personnel — handled as an "either" case below
             default:
-                return [];
+                return ['IT Personnel'];
         }
     }
     
@@ -101,9 +127,10 @@
             // For Emergency, either IT Manager OR BOTH IT Support and IT Supervisor must approve
             $itManagerApproved = in_array('IT Manager', $approvedLevels);
             $supportApproved = in_array('IT Support Specialist', $approvedLevels);
+            $sysAdminApproved = in_array('System Administrator', $approvedLevels);
             $supervisorApproved = in_array('IT Supervisor', $approvedLevels);
 
-            return $itManagerApproved || ($supportApproved && $supervisorApproved);
+            return $itManagerApproved || ($supportApproved && $sysAdminApproved && $supervisorApproved);
         }
 
         // For other types, all required approvals must be present
@@ -141,11 +168,11 @@
 
         // Path B: BOTH IT Support and IT Supervisor approved it
         $authorizedApprovals = retrieve(
-            "SELECT approval_level FROM change_approvals WHERE change_request_id = ? AND approval_level IN ('IT Support','IT Supervisor') AND decision = 'Approved'",
+            "SELECT approval_level FROM change_approvals WHERE change_request_id = ? AND approval_level IN ('IT Support','IT Supervisor', 'System Administrator') AND decision = 'Approved'",
             array($changeRequestId)
         );
         $approvedLevels = array_column($authorizedApprovals, 'approval_level');
-        if (in_array('IT Support', $approvedLevels) && in_array('IT Supervisor', $approvedLevels)) {
+        if (in_array('IT Support', $approvedLevels) && in_array('IT Supervisor', $approvedLevels) && in_array('System Administrator', $approvedLevels) ) {
             return true;
         }
 
@@ -177,7 +204,7 @@
                 return empty($itManagerDecision) ? 'IT Manager' : null;
             }
 
-            if ($role === 'General Manager' || $role === 'Management') {
+            if ($role === 'General Manager') {
                 // Only allowed once IT Manager has approved
                 $approved = !empty($itManagerDecision) && $itManagerDecision[0]['decision'] === 'Approved';
                 return $approved ? 'General Manager' : null;
@@ -189,6 +216,7 @@
         if ($changeType === 'Emergency') {
             if ($role === 'IT Manager') return 'IT Manager';
             if ($role === 'IT Support Specialist') return 'IT Support';
+            if ($role === 'System Administrator') return 'System Administrator';
             if ($role === 'IT Supervisor') return 'IT Supervisor';
             return null;
         }
@@ -232,6 +260,7 @@
 
             // Path B: BOTH IT Support and IT Supervisor
             if (($decisionByLevel['IT Support Specialist'] ?? null) === 'Approved'
+                && ($decisionByLevel['System Administrator'] ?? null) 
                 && ($decisionByLevel['IT Supervisor'] ?? null) === 'Approved') {
                 return 'Approved';
             }
@@ -240,8 +269,9 @@
             $itManagerRejected = ($decisionByLevel['IT Manager'] ?? null) === 'Rejected';
             $supportRejected = ($decisionByLevel['IT Support Specialist'] ?? null) === 'Rejected';
             $supervisorRejected = ($decisionByLevel['IT Supervisor'] ?? null) === 'Rejected';
+            $sysAdminRejected = ($decisionByLevel['System Administrator'] ?? null) === 'Rejected';
 
-            if ($itManagerRejected && ($supportRejected || $supervisorRejected)) return 'Rejected';
+            if ($itManagerRejected && ($supportRejected || $sysAdminRejected || $supervisorRejected)) return 'Rejected';
 
             return 'Under Review';
         }
@@ -258,6 +288,27 @@
         );
         return $map[$priority] ?? '';
     }
+
+    function logSessionTimeout($detail) {
+        $login_id = $_SESSION['login_id'] ?? null;
+        if (!$login_id) return;
+
+        $get_username = retrieve("SELECT username FROM users WHERE id=?", array($login_id));
+        if (!$get_username) return;
+
+        manage("INSERT INTO logs (username,computer_name,ip_address,page,action,details,date)
+                VALUES (?,?,?,?,?,?,?)",
+            array(
+                $get_username[0]['username'],
+                @gethostbyaddr($_SERVER['REMOTE_ADDR']) ?: 'unknown',
+                getLocalIP(),
+                basename($_SERVER['PHP_SELF']),
+                'Session Timeout',
+                $detail,
+                date("Y-m-d H:i:s")
+            )
+        );
+}
 
     // Converts total minutes into a short "Xd Yh Zm" / "Xh Ym" / "Xm" string
     function format_waiting_time($minutes) {
@@ -303,19 +354,16 @@
     }
 
     function getLocalIP(){
-        $hostname = gethostname();
-        $ip = gethostbyname($hostname);
-
-        if(filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)){
-            return $ip;
-        } else {
-            return "Unable to determine local IP Address";
-        }
+        $ip = trim(shell_exec("hostname -I | awk '{print $1}'"));
+        return filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4) ? $ip : "Unable to determine local IP Address";
     }
 
     // Retrieves the computer name of the client machine based on the IP address.
     function getComputerName($ip) {
-        $hostname = gethostbyaddr($ip);
-        return $hostname ?: "Unknown";
+       $hostname = gethostbyaddr($ip);
+        if ($hostname === false || $hostname === $ip) {
+            return "Unknown";
+        }
+        return $hostname;
     }
 ?>

@@ -13,6 +13,8 @@
     $count_user_awaiting = retrieve("SELECT COUNT(*) AS cnt FROM tickets WHERE status = 'In Progress' AND created_by=?", array($login_id))[0]['cnt'];
 
 
+    $count_user_closed_tickets = retrieve("SELECT COUNT(*) AS cnt FROM tickets WHERE status = 'Closed' AND created_by=?", array($login_id))[0]['cnt'];
+
     //Count staff
     $count_staff = retrieve("SELECT COUNT(*) AS cnt FROM users",array())[0]['cnt'];
 

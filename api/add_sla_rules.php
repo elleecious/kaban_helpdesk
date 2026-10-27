@@ -1,4 +1,7 @@
-    <?php
+<?php
+
+    $skip_activity = true; 
+
     include('../config/connect.php');
     include("../includes/session.php");
     include('../library/functions.php');
@@ -50,7 +53,7 @@
     $add_sla_rules_sql = manage("INSERT INTO sla_rules(category_id,priority,response_minutes,resolution_hours) VALUES(?,?,?,?)",array($category,$priority,$response_minutes,$resolution_hours));
     $logs_result = manage("INSERT INTO logs (username,computer_name,ip_address,page,action,details,date)
             VALUES (?,?,?,?,?,?,?)",
-        array($get_username[0]['username'],gethostbyaddr($_SERVER['REMOTE_ADDR']),getLocalIP(),"Add Category","ADD",         
+        array($get_username[0]['username'],gethostbyaddr($_SERVER['REMOTE_ADDR']),getLocalIP(),"Manage SLA Rules","ADD SLA RULES",         
             "<details>
                 <p>Add SLA Rules</p>
                 <p>

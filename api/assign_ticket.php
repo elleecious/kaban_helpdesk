@@ -1,4 +1,7 @@
 <?php
+
+$skip_activity = true; 
+
 include('../config/connect.php');
 include('../includes/session.php');
 include('../library/functions.php');
@@ -23,10 +26,11 @@ $get_username = retrieve("SELECT name FROM users WHERE id=?", array($login_id));
 $get_agent = retrieve("SELECT name FROM users WHERE id=?", array($agentId));
 $agentName = $get_agent[0]['name'] ?? 'Unknown';
 
+
 $rowsAffected = manage(
-    "UPDATE tickets SET assigned_to = ?, status = 'In Progress', updated_at = NOW() 
-     WHERE id = ? AND assigned_to IS NULL",
-    array($agentId, $ticketId)
+    "UPDATE tickets SET assigned_to = ?, status = 'Open', updated_at = ?
+     WHERE id = ? AND (status = 'Open' OR status = 'Escalated')",
+    array($agentId, date('Y-m-d H:i:s'),  $ticketId)
 );
 
 if ($rowsAffected > 0) {
@@ -45,7 +49,7 @@ if ($rowsAffected > 0) {
     create_notification(
         $ticket['created_by'],
         'assigned_ticket',
-        "Your ticket #".$ticket['ticket_number']." has been assigned to <br> ".$agentName." and is now In Progress",
+        "Your ticket #".$ticket['ticket_number']." has been assigned to <br> ".$agentName." and is now Open to be worked on.",
         "ticket_detail.php?id={$ticketId}",
         $ticketId
     );
@@ -56,14 +60,15 @@ if ($rowsAffected > 0) {
             $get_username[0]['name'],
             gethostbyaddr($_SERVER['REMOTE_ADDR']),
             getLocalIP(),
-            "Supervisor - Assign Ticket",
-            "UPDATE",
+            "DASHBOARD",
+            "ASSIGN TICKET",
             "<details><p>Manually Assigned Ticket</p><p>Ticket #: ".$ticketId." — Assigned To: <span class='font-weight-bold'>".$agentName."</span></p></details>",
             date('Y-m-d H:i:s')
         )
     );
 
     $response['status'] = 'success';
+    $response['ticket_number'] = $ticket['ticket_number'];
 } else {
     $response['message'] = 'This ticket was already assigned.';
 }

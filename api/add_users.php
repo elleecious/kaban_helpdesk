@@ -1,4 +1,7 @@
 <?php
+
+    $skip_activity = true; 
+
     include('../config/connect.php');
     include('../includes/session.php');
     include('../library/functions.php');
@@ -11,8 +14,7 @@
     $role = $_POST['role'];
     $department = $_POST['department'];
     $username = explode("@",$email)[0];
-    $password = $_POST['password'];
-    $confirm_password = $_POST['confirm_password'];
+    $password = $_POST['password']; // Default password for new users
 
     $hashed_password = password_hash($password, PASSWORD_DEFAULT);
 
@@ -28,24 +30,23 @@
 
     $get_username = retrieve("SELECT * FROM users WHERE id=?",array($login_id));
 
-    if ($password == $confirm_password) {
-        $add_users_sql = manage("INSERT INTO users (name,username,email,password_hash,role,department,status,created_at) 
-                        VALUES(?,?,?,?,?,?,?,?)",
-                        array($name,$username,$email,$hashed_password,$role,$department,1,date('Y-m-d H:i:s')));
+    $add_users_sql = manage("INSERT INTO users (name,username,email,password_hash,role,department,status,created_at) 
+                    VALUES(?,?,?,?,?,?,?,?)",
+                    array($name,$username,$email,$hashed_password,$role,$department,1,date('Y-m-d H:i:s')));
 
-        $logs_result = manage("INSERT INTO logs (username,computer_name,ip_address,page,action,details,date)
-                    VALUES (?,?,?,?,?,?,?)",
-                array($get_username[0]['username'], gethostbyaddr($_SERVER['REMOTE_ADDR']),getLocalIP(),"Add User","ADD",         
-                    "<details>
-                        <p>Add User</p>
-                        <p>
-                            Name: <span class='font-weight-bold'>".$name."</span><br>
-                            Email: <span class='font-weight-bold'>".$email."</span><br>
-                            Role: <span class='font-weight-bold'>".$role."</span><br>
-                            Department: <span class='font-weight-bold'>".$department."</span><br>
-                            Username: <span class='font-weight-bold'>".$username."</span><br>
-                        </p>
-                    </details>", date('Y-m-d H:i:s')));
+    $logs_result = manage("INSERT INTO logs (username,computer_name,ip_address,page,action,details,date)
+                VALUES (?,?,?,?,?,?,?)",
+            array($get_username[0]['username'], gethostbyaddr($_SERVER['REMOTE_ADDR']),getLocalIP(),"Manage Users","ADD USERS",         
+                "<details>
+                    <p>Add User</p>
+                    <p>
+                        Name: <span class='font-weight-bold'>".$name."</span><br>
+                        Email: <span class='font-weight-bold'>".$email."</span><br>
+                        Role: <span class='font-weight-bold'>".$role."</span><br>
+                        Department: <span class='font-weight-bold'>".$department."</span><br>
+                        Username: <span class='font-weight-bold'>".$username."</span><br>
+                    </p>
+                </details>", date('Y-m-d H:i:s')));
 
         if ($add_users_sql && $logs_result) {
             $response = array(
@@ -55,9 +56,6 @@
         } else {
             $response = array('status' => 'error', 'message' => 'Failed to add a user');
         }
-    } else{
-        $response = array('status' => 'error', 'message' => 'Passwords do not match');
-    }
     
     echo json_encode($response);
 

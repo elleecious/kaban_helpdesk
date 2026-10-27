@@ -33,7 +33,7 @@ $new_hashed_password = password_hash($new_password, PASSWORD_BCRYPT);
 $save_pass_sql = manage("UPDATE users SET password_hash=? WHERE id=?",array($new_hashed_password, $login_id));
 $logs_result = manage("INSERT INTO logs (username, computer_name,ip_address,page,action,details,date)
         VALUES (?,?,?,?,?,?,?)",
-    array($get_username[0]['username'], gethostbyaddr($_SERVER['REMOTE_ADDR']),getLocalIP(),"UPDATE PASSWORD","UPDATE",         
+    array($get_username[0]['username'], gethostbyaddr($_SERVER['REMOTE_ADDR']),getLocalIP(),"Profile","UPDATE PASSWORD",         
         "<details>
             <p>Update Password</p>
             <p>Name: ".$name."</p>

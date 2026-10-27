@@ -38,8 +38,8 @@ $canAct = getApprovalLevelForAction($cr['change_type'], $role, $id) !== null
                 <textarea id="comments" name="comments" class="form-control md-textarea" rows="5" style="resize:none;"></textarea>
                 <label for="comments">Comments (optional)</label>
             </div>
-            <button class="btn btn-success" id="btnApprove">Approve</button>
-            <button class="btn btn-danger" id="btnReject">Reject</button>
+            <button class="btn btn-outline-success" id="btnApprove">Approve</button>
+            <button class="btn btn-outline-danger" id="btnReject">Reject</button>
             <?php else: ?>
             <hr>
             <p class="font-weight-bold text-warning">You are not authorized to act on this request at its current stage, or it has already been decided.</p>

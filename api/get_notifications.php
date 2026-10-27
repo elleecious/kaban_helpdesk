@@ -1,4 +1,7 @@
 <?php
+
+$skip_activity = true;
+
 include("../config/connect.php");
 include("../includes/session.php");
 require_once __DIR__ . '/../library/notify.php';
@@ -26,13 +29,19 @@ if (isset($_GET['action']) && $_GET['action'] === 'mark_one' && isset($_GET['id'
     exit;
 }
 
-// Fetch counts and notifications
+// Fetch counts and notifications, paginated
+$limit = isset($_GET['limit']) ? (int) $_GET['limit'] : 10;
+$offset = isset($_GET['offset']) ? (int) $_GET['offset'] : 0;
+
 $unread_count = get_unread_count($current_user_id);
-$notifications = get_recent_notifications($current_user_id, 10);
+$total_count = get_total_notification_count($current_user_id);
+$notifications = get_recent_notifications($current_user_id, $limit, $offset);
 
 echo json_encode([
     'status' => 'success',
     'unread_count' => $unread_count,
-    'notifications' => $notifications
+    'notifications' => $notifications,
+    'total_count' => $total_count,
+    'has_more' => ($offset + $limit) < $total_count
 ]);
 exit;

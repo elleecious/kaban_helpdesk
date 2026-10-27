@@ -25,7 +25,8 @@ if ($id === (int)$_SESSION['login_id']) {
     exit;
 }
 
-$get_admin = retrieve("SELECT name FROM users WHERE id = ?", array($_SESSION['login_id']));
+$get_admin = retrieve("SELECT username, name FROM users WHERE id = ?", array($_SESSION['login_id']));
+$adminUser = $get_admin[0]['username'] ?? 'Unknown';
 $adminName = $get_admin[0]['name'] ?? 'Unknown';
 
 $newStatus = $currentStatus == 1 ? 0 : 1;
@@ -41,7 +42,7 @@ try {
         manage("INSERT INTO logs (username, computer_name, ip_address, page, action, details, date)
             VALUES (?, ?, ?, ?, ?, ?, ?)",
             [
-                $adminName,
+                $adminUser,
                 gethostbyaddr($_SERVER['REMOTE_ADDR']),
                 getLocalIP(),
                 "Manage Users",

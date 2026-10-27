@@ -1,13 +1,19 @@
 <?php
 include("config/connect.php");
 include("includes/session.php");
+include("library/functions.php");
 
 $id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
 
 $rows = retrieve(
-    "SELECT cr.*, u.name AS requestor_name
+    "SELECT cr.*, 
+            u.name AS requestor_name,
+            ru.name AS received_by_name,
+            iu.name AS implemented_by_name
      FROM change_requests cr
-     LEFT JOIN users u ON u.id = cr.requestor_id
+     LEFT JOIN users u  ON u.id = cr.requestor_id
+     LEFT JOIN users ru ON ru.id = cr.received_by_it
+     LEFT JOIN users iu ON iu.id = cr.implemented_by
      WHERE cr.id = ?",
     array($id)
 );
@@ -17,7 +23,6 @@ if (empty($rows)) {
 }
 $cr = $rows[0];
 
-// Approval rows tied to this request (safe to leave empty if table not yet in use)
 $approvals = retrieve(
     "SELECT ca.approval_level, ca.decision, ca.comments, ca.decided_at, u.name AS approver_name
      FROM change_approvals ca
@@ -27,22 +32,26 @@ $approvals = retrieve(
     array($cr['id'])
 );
 
+$role = $_SESSION['role'] ?? null;
+$approvalLevel = getApprovalLevelForAction($cr['change_type'], $role, $cr['id']);
+$canAct = ($approvalLevel !== null) && in_array($cr['status'], ['Submitted', 'Under Review']);
+
 function h($v) { return htmlspecialchars($v ?? '', ENT_QUOTES); }
 function fmt_date($v) { return $v ? date("M j, Y", strtotime($v)) : "—"; }
 function fmt_datetime($v) { return $v ? date("M j, Y g:i A", strtotime($v)) : "—"; }
 
 $status = $cr['status'] ?? 'Submitted';
 $statusClasses = [
-    'Draft'=> 'st-draft',
-    'Submitted' => 'st-pending',
-    'Under Review' => 'st-pending',
-    'Approved' => 'st-approved',
-    'Rejected' => 'st-rejected',
-    'Scheduled' => 'st-approved',
-    'Implementing' => 'st-approved',
-    'Implemented' => 'st-done',
-    'Reviewed' => 'st-done',
-    'Closed' => 'st-done',
+    'Draft'         => 'st-draft',
+    'Submitted'     => 'st-pending',
+    'Under Review'  => 'st-pending',
+    'Approved'      => 'st-approved',
+    'Rejected'      => 'st-rejected',
+    'Scheduled'     => 'st-approved',
+    'Implementing'  => 'st-approved',
+    'Implemented'   => 'st-done',
+    'Reviewed'      => 'st-done',
+    'Closed'        => 'st-done',
 ];
 $statusClass = $statusClasses[$status] ?? 'st-pending';
 ?>
@@ -55,6 +64,7 @@ $statusClass = $statusClasses[$status] ?? 'st-pending';
 <link rel="stylesheet" href="./assets/css/mdb-ui-kit-mdb.min.css">
 <link rel="stylesheet" href="./assets/css/view_change_request.css">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700&family=Roboto:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 <style>
 @media print {
     @page {
@@ -73,26 +83,21 @@ $statusClass = $statusClasses[$status] ?? 'st-pending';
 <div class="topbar">
   <div class="wrap">
     <img src="./assets/img/kaban-logo-horizontal.png" alt="Kaban Hotel and Casino Boracay" class="brand-logo">
-    
     <?php
-      $allowed_roles = ['IT Manager', 'General Manager', 'IT Supervisor', 'IT Support Specialist'];
-      if (in_array($role, $allowed_roles)): 
-    ?>
-      <a href="manage_change_request.php" class="back-link">&larr; Back to list</a>
-    <?php else: ?>
-      <a href="view_all_change_requests.php" class="back-link">&larr; Back to list</a>
-    <?php endif; ?>
+      $allowed_roles = ['IT Support Specialist', 'System Administrator', 'IT Supervisor', 'IT Manager'];
+      $user_role = $_SESSION['role'] ?? null;
 
+      if (in_array($user_role, $allowed_roles, true)): 
+    ?>
+      <a href="manage_change_request.php" class="back-link">&larr; Back to Manage Change Request</a>  
+    <?php else: ?>
+      <a href="employee_dashboard.php" class="back-link">&larr; Back to dashboard</a>
+    <?php endif; ?>
   </div>
 </div>
 
 <div class="sheet">
-  
-  <div class="form-title-bar">
-    <img src="./assets/img/kaban-logo-horizontal.png" alt="Kaban Hotel and Casino Boracay" class="title-bar-logo">
-    <div class="title-bar-label">Change Request Form</div>
-    <div></div>
-  </div>
+
   <div class="sheet-head">
     <div>
       <h1><?= h($cr['change_title']) ?></h1>
@@ -185,7 +190,7 @@ $statusClass = $statusClasses[$status] ?? 'st-pending';
       <div class="approval-item">
         <div class="approval-dot <?= $dClass ?>"><?= $dSymbol ?></div>
         <div>
-          <div class="approval-role"> <?= h($a['decision'] ?: 'Pending') ?> by the <?= h($a['approval_level']) ?></div>
+          <div class="approval-role"><?= h($a['approval_level']) ?> — <?= h($a['decision'] ?: 'Pending') ?></div>
           <div class="approval-sub">
             <?= $a['approver_name'] ? h($a['approver_name']) : 'Awaiting assignment' ?>
             <?php if ($a['decided_at']): ?> · <?= fmt_datetime($a['decided_at']) ?><?php endif; ?>
@@ -201,19 +206,194 @@ $statusClass = $statusClasses[$status] ?? 'st-pending';
     <div class="no-approvals">No approval activity recorded yet for this request.</div>
   <?php endif; ?>
 
-  
-  <?php
-      if (in_array($role, $allowed_roles)):
-  ?>
+  <div class="section-label">Implementation</div>
+<?php
+    $hasImplementationActivity = $cr['received_by_it'] || $cr['implemented_by'] || !empty($cr['issues_encountered']);
+?>
+<?php if ($hasImplementationActivity): ?>
+  <div class="approval-list">
+
+      <?php if ($cr['received_by_it']): ?>
+      <div class="approval-item">
+        <div class="approval-dot approved"><span class="fa fa-check"></span></div>
+        <div>
+          <div class="approval-role">Received by IT</div>
+          <div class="approval-sub"><?= h($cr['received_by_name'] ?: 'Unknown') ?></div>
+        </div>
+      </div>
+      <?php endif; ?>
+
+      <?php if ($cr['implemented_by']): ?>
+      <div class="approval-item">
+        <div class="approval-dot approved"><span class="fa fa-check"></span></div>
+        <div>
+          <div class="approval-role">Implemented by <?= h($cr['implemented_by_name'] ?: 'Unknown') ?></div>
+          <?php if ($cr['expected_downtime']): ?>
+            <div class="approval-sub">Expected downtime: <?= h($cr['expected_downtime']) ?></div>
+          <?php endif; ?>
+          <?php if (!empty($cr['implementation_notes'])): ?>
+            <div class="approval-comment"><?= nl2br(h($cr['implementation_notes'])) ?></div>
+          <?php endif; ?>
+        </div>
+      </div>
+      <?php endif; ?>
+      
+      <?php
+        $log = str_replace("\r\n", "\n", $cr['issues_encountered'] ?? '');
+        if (trim($log) !== ''):
+            $found = preg_match_all(
+                '/\[Attempt (\d+)[^\]]*?rolled back (.*?) by (.*?)\]\s*(.*?)(?=\s*\[(?:Attempt \d+|Closing note)|\z)/s',
+                $log, $matches, PREG_SET_ORDER
+            );
+
+            if ($found):
+                foreach ($matches as $m):
+          ?>
+            <div class="approval-item">
+              <div class="approval-dot rejected"><span class="fas fa-xmark"></span></div>
+              <div>
+                <div class="approval-role">Rollback — Attempt <?= h($m[1]) ?></div>
+                <div class="approval-sub"><?= h($m[3]) ?> · <?= h($m[2]) ?></div>
+                <?php if (trim($m[4]) !== ''): ?>
+                  <div class="approval-comment"><?= nl2br(h(trim($m[4]))) ?></div>
+                <?php endif; ?>
+              </div>
+            </div>
+          <?php
+                  endforeach;
+              else:
+          ?>
+            <div class="approval-item">
+              <div class="approval-dot bg-primary text-white"><span class="fa fa-history"></span></div>
+              <div>
+                <div class="approval-role">Rollback history</div>
+                <div class="approval-comment"><?= nl2br(h($log)) ?></div>
+              </div>
+            </div>
+          <?php
+              endif;
+              endif;
+          ?>
+
+      <?php if (!empty($cr['validation_results'])): ?>
+      <div class="approval-item">
+        <div class="approval-dot approved"><span class="fa fa-check"></span></div>
+        <div>
+          <div class="approval-role">Validated &amp; Tested</div>
+          <div class="approval-comment"><?= nl2br(h($cr['validation_results'])) ?></div>
+        </div>
+      </div>
+      <?php endif; ?>
+
+      <?php if ($status === 'Closed'):
+        $closingNote = '';
+          if (preg_match('/\[Closing note — (.*?) by (.*?)\]\n?(.*)\z/s', $cr['issues_encountered'] ?? '', $cm)) {
+            $closingNote = trim($cm[3]);
+        }
+      ?>
+      <div class="approval-item">
+        <div class="approval-dot approved"><span class="fa fa-check"></span></div>
+        <div>
+          <div class="approval-role">Closed</div>
+          <?php if ($closingNote): ?>
+            <div class="approval-comment"><?= nl2br(h($closingNote)) ?></div>
+          <?php else: ?>
+            <div class="approval-sub">No issues reported.</div>
+          <?php endif; ?>
+        </div>
+      </div>
+      <?php endif; ?>
+
+    </div>
+
+  <?php else: ?>
+    <div class="no-approvals">No implementation activity recorded yet.</div>
+  <?php endif; ?>
+
+  <?php if ($canAct): ?>
+  <div class="action-panel">
+    <div class="field-label">Your decision — acting as <?= h($approvalLevel) ?></div>
+      <div class="form-row">
+        <div class="form-outline">
+          <textarea id="comments" name="comments" class="form-control" rows="5" style="resize:none;"></textarea>
+          <label class="form-label" for="comments">Comments (optional)</label>
+        </div>
+      </div>
+    <div class="action-btns">
+      <button type="button" class="btn btn-success btn-lg rounded-pill" id="btnApprove">Approve</button>
+      <button type="button" class="btn btn-danger btn-lg rounded-pill" id="btnReject">Reject</button>
+    </div>
+  </div>
+  <?php endif; ?>
   <div class="sheet-footer">
     <button type="button" class="btn btn-outline-kaban rounded-pill" onclick="window.print()">Print</button>
-    <?php if (in_array($status, ['Submitted','Under Review'])): ?>
-      <a href="approve_change_request.php?id=<?= (int)$cr['id'] ?>" class="btn btn-kaban rounded-pill text-white">Review &amp; approve</a>
+    <?php if (in_array($status, ['Approved', 'Scheduled', 'Implementing']) 
+              && in_array($role, ['IT Support Specialist', 'IT Supervisor', 'IT Manager'])): ?>
+      <a href="implement_change_request.php?id=<?= (int)$cr['id'] ?>" class="btn btn-outline-info rounded-pill">
+        Go to Implementation
+      </a>
     <?php endif; ?>
   </div>
-    <?php else: ?>
-    <?php endif; ?>
+
 </div>
 
+<script type="text/javascript" src="./assets/js/mdb-ui-kit-mdb.min.js"></script>
+<script type="text/javascript" src="./assets/js/jquery-4.0.0.min.js"></script>
+<script src="./assets/js/sweetalert2.all.min.js"></script>
+<script type="text/javascript">
+function submitDecision(decision) {
+    $.ajax({
+        url: "./api/process_change_approval.php",
+        type: "POST",
+        dataType: "JSON",
+        data: {
+            change_request_id: <?= (int)$cr['id'] ?>,
+            decision: decision,
+            comments: $('#comments').val()
+        },
+        success: function(response) {
+            Swal.fire({
+                title: response.status === 'success' ? 'Success!' : 'Error!',
+                text: response.message,
+                icon: response.status === 'success' ? 'success' : 'error',
+                confirmButtonText: 'OK'
+            }).then(() => { if (response.status === 'success') location.reload(); });
+        },
+        error: function(xhr, status, error) {
+            Swal.fire({ title: 'Error!', text: 'An error occurred: ' + error, icon: 'error' });
+        }
+    });
+}
+
+$('#btnApprove').on('click', () => {
+    Swal.fire({
+        title: 'Approve this change request?',
+        text: 'This will record your approval and move the request forward.',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: 'Yes, approve',
+        cancelButtonText: 'Cancel',
+        confirmButtonColor: '#1e6b3e',
+        reverseButtons: true
+    }).then((result) => {
+        if (result.isConfirmed) submitDecision('Approved');
+    });
+});
+
+$('#btnReject').on('click', () => {
+    Swal.fire({
+        title: 'Reject this change request?',
+        text: 'This will mark the request as Rejected and notify the requestor.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Yes, reject it',
+        cancelButtonText: 'Cancel',
+        confirmButtonColor: '#a3282c',
+        reverseButtons: true
+    }).then((result) => {
+        if (result.isConfirmed) submitDecision('Rejected');
+    });
+});
+</script>
 </body>
 </html>

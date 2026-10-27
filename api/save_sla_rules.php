@@ -27,7 +27,7 @@
 
     $logs_result = manage("INSERT INTO logs (username,computer_name,ip_address,page,action,details,date)
             VALUES (?,?,?,?,?,?,?)",
-        array($get_username[0]['username'],gethostbyaddr($_SERVER['REMOTE_ADDR']),getLocalIP(),"Update SLA RULES","UPDATE",         
+        array($get_username[0]['username'],gethostbyaddr($_SERVER['REMOTE_ADDR']),getLocalIP(),"Manage Category and SLA Rules","UPDATE SLA RULES",         
             "<details>
                 <p>Update SLA Rules</p>
                 <p>

@@ -3,9 +3,7 @@
 <footer class="text-center deep-purple 600 text-lg-start mt-2 d-none">
   <!-- Copyright -->
   <div class="text-center white-text p-3">
-	<span>Developed by: Kaban Hotel and Casino Boracay Information Technology Department</span><br>
-    © 2026 Copyright:
-    <span class="text-body white-text">KabanDesk</span>
+	  <span>Developed by: <br>Kaban Hotel and Casino Boracay Information Technology Department</span> © 2026
   </div>
   <!-- Copyright -->
 </footer>
@@ -16,8 +14,10 @@
 <script type="text/javascript" src="<?php echo $short_url;?>assets/js/sweetalert2.all.min.js"></script>
 <script type="text/javascript" src="<?php echo $short_url;?>assets/js/addons/datatables.min.js"></script>
 <script type="text/javascript" src="<?php echo $short_url;?>assets/js/script.js"></script>
+<script type="text/javascript" src="<?php echo $short_url;?>assets/js/notifications.js"></script>
 <script type="text/javascript" src="<?php echo $short_url;?>assets/js/bootstrap-select.min.js"></script>
 <script type="text/javascript" src="<?php echo $short_url;?>assets/js/popper.min.js"></script>
+<script type="text/javascript" src="<?php echo $short_url;?>assets/js/toastr.min.js"></script>
 </body>
 </html>
 <script type="text/javascript">

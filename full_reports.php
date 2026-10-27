@@ -5,9 +5,43 @@
 <?php include("library/stats.php"); ?>
 <?php $page_title = "Reports - KabanDesk"; ?>
 <?php
-
-if (empty($_SESSION['login_id']) || !in_array($_SESSION['role'] ?? '', ['IT Supervisor', 'IT Manager'])) {
+$allowed_roles = ['IT Supervisor','IT Manager', 'Administrator'];
+if (empty($_SESSION['login_id']) || !in_array($_SESSION['role'] ?? '', ['IT Supervisor', 'IT Manager', 'Administrator'])) {
     header('Location: index.php');
+    exit;
+}
+
+if (!in_array($_SESSION['role'] ?? '', $allowed_roles, true)) {
+    ?>
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Access Denied</title>
+        <style>
+            body {
+                margin: 0;
+                min-height: 100vh;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                font-family: system-ui, sans-serif;
+                background: #f4f4f5;
+                color: #333;
+                text-align: center;
+            }
+            img { max-width: 700px; width: 80%; height: auto; }
+            a { margin-top: 1rem; color: #2563eb; text-decoration: none; }
+        </style>
+    </head>
+    <body>
+        <img src="/assets/img/access_denied.jpg" alt="Access Denied">
+        <h1 class="display-5 mt-3">You don't have permission to view this page.</h1>
+    </body>
+    </html>
+    <?php
     exit;
 }
 
@@ -18,7 +52,7 @@ $category = $_GET['category'] ?? 'ALL';
 $status = $_GET['status'] ?? 'ALL';
 
 $categories = retrieve("SELECT * FROM categories ORDER BY name",array());
-$statuses   = ['New','Open','In Progress','Pending','Resolved','Closed'];
+$statuses   = ['Open','In Progress','Resolved','Closed'];
 
 $where  = "WHERE t.created_at BETWEEN :date_from AND :date_to";
 $params = [
@@ -173,10 +207,10 @@ function format_minutes($min) {
 
 ?>
 
-<div class="container-fluid py-4 px-4 mt-5">
+<div class="py-4 px-4 mt-5">
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h3 class="mb-0"><i class="fa-solid fa-chart-line me-2"></i>&nbsp;Reports</h3>
-        <button type="button" class="btn btn-outline-primary btn-sm" id="exportCsvBtn">
+        <button type="button" class="btn btn-outline-primary btn-sm d-none" id="exportCsvBtn">
             <i class="fa-solid fa-file-csv me-1"></i>Export CSV
         </button>
     </div>
@@ -255,29 +289,31 @@ function format_minutes($min) {
     </div>
 
     <div class="row g-3 mb-3">
-        <div class="col-md-6">
+        <div class="col-md-12 mb-3">
             <div class="card chart-card p-3">
                 <h6 class="mb-3">Tickets by Category</h6>
                 <canvas id="categoryChart" height="220"></canvas>
             </div>
         </div>
-        <div class="col-md-6">
+        <div class="col-md-12 mb-3">
             <div class="card chart-card p-3">
                 <h6 class="mb-3">Tickets by Status</h6>
-                <canvas id="statusChart" height="220"></canvas>
+                 <div style="max-width: 500px;" class="mx-auto w-100">
+                    <canvas id="statusChart"></canvas>
+                </div>
             </div>
         </div>
     </div>
 
     <!-- Charts Row 2 -->
     <div class="row g-3 mb-3">
-        <div class="col-md-6">
+        <div class="col-md-12 mb-3">
             <div class="card chart-card p-3">
                 <h6 class="mb-3">Ticket Volume — Last 6 Months</h6>
                 <canvas id="volumeChart" height="220"></canvas>
             </div>
         </div>
-        <div class="col-md-6">
+        <div class="col-md-12 mb-3">
             <div class="card chart-card p-3">
                 <h6 class="mb-3">Weekly SLA Compliance Trend</h6>
                 <canvas id="slaChart" height="220"></canvas>
@@ -317,7 +353,7 @@ function format_minutes($min) {
 
 </div>
 <?php include("includes/footer.php"); ?>
-<script src="./assets/js/addons-pro/chat.min.js"></script>
+<script src="/assets/js/chart.umd.min.js"></script>
 <script>
 const categoryChart = new Chart(document.getElementById('categoryChart'), {
     type: 'bar',
@@ -334,8 +370,18 @@ const statusChart = new Chart(document.getElementById('statusChart'), {
         labels: <?= $js_status_labels ?>,
         datasets: [{ data: <?= $js_status_data ?>, backgroundColor: ['#4e73df','#1cc88a','#f6c23e','#e74a3b','#36b9cc','#858796'] }]
     },
-    options: { plugins: { legend: { position: 'bottom' } } }
+    options: { 
+        plugins: { 
+            legend: { 
+                    position: 'bottom' 
+                } 
+            }, 
+        responsive: true, 
+        mainAspectRation: true 
+    }
 });
+
+statusChart.resize(1000,500);
 
 const volumeChart = new Chart(document.getElementById('volumeChart'), {
     type: 'line',

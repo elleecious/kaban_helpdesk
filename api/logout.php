@@ -1,12 +1,17 @@
 <?php
 include('../config/connect.php');
 include('../library/functions.php');
+
 session_start();
 
 if (isset($_SESSION['login_id'])) {
     $login_id = $_SESSION['login_id'];
 } else {
     $login_id = "Unknown";
+}
+
+if (($_GET['reason'] ?? '') === 'timeout') {
+    logSessionTimeout('Auto signed out after inactivity warning expired (client-side)');
 }
 
 $get_username = retrieve("SELECT * FROM users WHERE id=?",array($login_id));

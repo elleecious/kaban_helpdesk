@@ -1,3 +1,4 @@
+<?php $skip_activity = true;  ?>
 <?php include("includes/header.php"); ?>
 <?php include("includes/session.php"); ?>
 <?php include("includes/navbar.php") ?>

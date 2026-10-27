@@ -1,4 +1,7 @@
 <?php
+
+$skip_activity = true;
+
 include('../config/connect.php');
 include('../includes/session.php');
 include('../library/functions.php');
@@ -48,7 +51,7 @@ if ($add_comments_sql) {
         create_notification(
             $ticket['created_by'],
             'add_comment',
-            "{$it_supportName} replied to your ticket <br> \"" . mb_strimwidth($comment, 0, 100, '...') . "\"",
+            "{$it_supportName} replied to your ticket \"" . mb_strimwidth($comment, 0, 100, '...') . "\"",
             $ticketLink,
             $ticketId
         );
@@ -64,6 +67,13 @@ if ($add_comments_sql) {
                     Comment: ".$comment."<br>
                 </p>
             </details>", date('Y-m-d H:i:s a')));
+
+    $response['status'] = 'success';
+    $response['comment'] = array(
+        'author_name' => $it_supportName,
+        'body'        => $comment,
+        'created_at'  => date('Y-m-d H:i:s')
+    );
 
     $response['status'] = 'success';
 } else {
